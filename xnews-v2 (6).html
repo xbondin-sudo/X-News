@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>X/News</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060810;
+  --surface: rgba(255,255,255,0.03);
+  --surface2: rgba(255,255,255,0.055);
+  --border: rgba(255,255,255,0.08);
+  --border-glow: rgba(100,180,255,0.3);
+  --accent: #64b4ff;
+  --accent2: #a78bfa;
+  --accent-glow: rgba(100,180,255,0.12);
+  --green: #34d399;
+  --green-glow: rgba(52,211,153,0.12);
+  --red: #f87171;
+  --text: #eef2ff;
+  --text2: #7986a8;
+  --text3: #3d4a66;
+  --card: rgba(6,10,22,0.82);
+  --nav: rgba(6,8,16,0.96);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -5%, rgba(100,180,255,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 35% at 85% 85%, rgba(167,139,250,0.05) 0%, transparent 55%);
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 20px 13px;
+  background: var(--nav);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-family:'Playfair Display',serif; font-size:20px; letter-spacing:-0.3px; }
+.logo em { color:var(--accent); font-style:normal; }
+.live-chip {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  background: var(--green-glow);
+  border: 1px solid rgba(52,211,153,0.18);
+  font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--green);
+}
+.live-dot {
+  width:6px; height:6px; border-radius:50%; background:var(--green);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(52,211,153,.4);} 50%{opacity:.7;box-shadow:0 0 0 4px rgba(52,211,153,0);} }
+
+/* ── PAGES ── */
+.page { display:none; padding-bottom:90px; position:relative; z-index:1; }
+.page.active { display:block; }
+
+/* ── SLIDE PANEL ── */
+.panel {
+  position:fixed; top:0; height:100dvh; width:100%; max-width:480px;
+  left:50%; transform:translateX(calc(-50% + 480px));
+  background:var(--bg); z-index:300; overflow-y:auto;
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+@media(max-width:480px){
+  .panel{left:0;transform:translateX(100%);}
+  .panel.open{transform:translateX(0);}
+}
+.panel.open{transform:translateX(-50%);}
+
+/* ── BRIEF HERO ── */
+.brief-hero {
+  padding: 28px 20px 22px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.brief-hero::after {
+  content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:.25;
+}
+.eyebrow {
+  font-size:10px; font-weight:700; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:8px;
+}
+.brief-title { font-family:'Playfair Display',serif; font-size:33px; line-height:1.1; margin-bottom:6px; }
+.brief-sub { font-size:13px; color:var(--text2); }
+.refresh-row { padding:13px 20px; border-bottom:1px solid var(--border); }
+.refresh-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:9px 16px; border-radius:9px;
+  background:var(--surface2); border:1px solid var(--border-glow);
+  color:var(--accent); font-family:'DM Sans',sans-serif;
+  font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;
+}
+.refresh-btn:hover { background:var(--accent-glow); }
+.spin-icon { display:inline-block; }
+.refresh-btn.spinning .spin-icon { animation:spin .65s linear infinite; }
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── STORY LIST ── */
+.story-list { padding:16px 20px; display:flex; flex-direction:column; gap:12px; }
+
+/* ── STORY CARD ── */
+.story-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  backdrop-filter: blur(14px);
+  animation: fadeUp .4s ease both;
+  position: relative; overflow:hidden;
+  transition: border-color .25s, transform .25s, box-shadow .25s;
+}
+.story-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(100,180,255,.28),transparent);
+  opacity:0; transition:opacity .3s;
+}
+.story-card:hover { border-color:var(--border-glow); transform:translateY(-2px); box-shadow:0 10px 36px rgba(0,0,0,.45); }
+.story-card:hover::before { opacity:1; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);} }
+
+.topic-tag {
+  font-size:9px; font-weight:700; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:10px;
+  display:flex; align-items:center; gap:5px;
+}
+.topic-tag::before { content:''; width:14px; height:1px; background:var(--accent); opacity:.45; }
+.headline { font-family:'Playfair Display',serif; font-size:17px; line-height:1.35; margin-bottom:12px; }
+.bullets { list-style:none; display:flex; flex-direction:column; gap:5px; margin-bottom:14px; min-height:50px; }
+.bullets li { display:flex; gap:8px; align-items:flex-start; font-size:12px; line-height:1.55; color:var(--text2); }
+.bullets li::before { content:'·'; color:var(--accent); flex-shrink:0; }
+.bullet-loading { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text3); font-style:italic; }
+.mini-spin { width:13px; height:13px; border:1.5px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; flex-shrink:0; }
+.story-meta { display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px solid var(--border); }
+.story-source { font-size:11px; color:var(--text3); font-weight:500; }
+.story-time { font-size:11px; color:var(--text3); }
+.story-actions { margin-top:12px; }
+.btn-more {
+  display:block; width:100%; padding:9px; border-radius:8px;
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text2); font-family:'DM Sans',sans-serif;
+  font-size:12px; font-weight:500; cursor:pointer; text-align:center;
+  transition:all .2s;
+}
+.btn-more:hover { border-color:var(--border-glow); color:var(--accent); }
+
+/* ── STATES ── */
+.state-loading { padding:52px 20px; display:flex; flex-direction:column; align-items:center; gap:14px; color:var(--text2); font-size:13px; }
+.big-spin { width:36px; height:36px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .9s linear infinite; }
+.state-empty { padding:52px 20px; text-align:center; color:var(--text2); font-size:14px; }
+.state-empty small { display:block; margin-top:6px; font-size:12px; color:var(--text3); }
+
+/* ── PAGE HEADER ── */
+.page-header { padding:28px 20px 20px; border-bottom:1px solid var(--border); }
+.page-header h1 { font-family:'Playfair Display',serif; font-size:27px; margin-bottom:4px; }
+.page-header p { font-size:13px; color:var(--text2); }
+
+/* ── TOPICS GRID ── */
+.topics-grid { padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.topic-card {
+  background:var(--card); border:1px solid var(--border); border-radius:14px;
+  padding:20px 16px; cursor:pointer; transition:all .25s;
+  backdrop-filter:blur(14px); animation:fadeUp .3s ease both;
+  position:relative; overflow:hidden;
+}
+.topic-card::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  transform:scaleX(0); transition:transform .3s; transform-origin:left;
+}
+.topic-card:hover { border-color:var(--border-glow); transform:translateY(-2px); }
+.topic-card:hover::after { transform:scaleX(1); }
+.t-icon { font-size:24px; margin-bottom:10px; }
+.t-name { font-size:13px; font-weight:500; }
+
+/* ── PANEL INNER ── */
+.panel-bar {
+  position:sticky; top:0; z-index:10;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:15px 20px; border-bottom:1px solid var(--border);
+  background:var(--nav); backdrop-filter:blur(24px);
+}
+.back-btn { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--accent); cursor:pointer; font-weight:600; }
+.panel-body { padding:24px 20px 40px; }
+.panel-tag { font-size:9px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
+.panel-headline { font-family:'Playfair Display',serif; font-size:25px; line-height:1.25; margin-bottom:6px; }
+.panel-meta { font-size:12px; color:var(--text3); margin-bottom:24px; }
+.section-label {
+  font-size:9px; font-weight:700; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--text3);
+  margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border);
+}
+.panel-bullets { list-style:none; display:flex; flex-direction:column; gap:8px; margin-bottom:28px; }
+.panel-bullets li { display:flex; gap:10px; align-items:flex-start; font-size:14px; line-height:1.65; color:var(--text2); }
+.panel-bullets li::before { content:'·'; color:var(--accent); flex-shrink:0; font-size:18px; line-height:1.25; }
+.panel-summary { font-size:14px; line-height:1.8; color:var(--text2); margin-bottom:28px; }
+.read-more {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:14px; border-radius:10px;
+  background:var(--accent-glow); border:1px solid var(--border-glow);
+  color:var(--accent); font-family:'DM Sans',sans-serif;
+  font-size:14px; font-weight:700; cursor:pointer; text-decoration:none;
+  transition:all .2s; margin-bottom:16px;
+}
+.read-more:hover { background:rgba(100,180,255,.2); }
+
+/* ── ASK AI ── */
+.ask-box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.ask-label { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent2); margin-bottom:12px; }
+.ask-msgs { max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:9px; margin-bottom:12px; }
+.msg { padding:10px 12px; border-radius:8px; font-size:13px; line-height:1.5; }
+.msg.user { background:var(--accent-glow); color:var(--text); align-self:flex-end; max-width:86%; }
+.msg.ai { background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+.ask-row { display:flex; gap:8px; }
+.ask-input {
+  flex:1; background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; padding:10px 12px;
+  font-family:'DM Sans',sans-serif; font-size:13px; color:var(--text);
+  outline:none; transition:border-color .2s;
+}
+.ask-input::placeholder { color:var(--text3); }
+.ask-input:focus { border-color:var(--border-glow); }
+.ask-send {
+  padding:10px 14px; border-radius:8px;
+  background:var(--accent); border:none;
+  color:#000; font-family:'DM Sans',sans-serif;
+  font-size:13px; font-weight:700; cursor:pointer; transition:opacity .2s;
+}
+.ask-send:hover { opacity:.85; }
+
+/* ── SEARCH ── */
+.search-wrap { padding:20px; }
+.search-row { display:flex; gap:10px; margin-bottom:6px; }
+.search-inp {
+  flex:1; background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; padding:13px 16px;
+  font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text);
+  outline:none; transition:border-color .2s;
+}
+.search-inp::placeholder { color:var(--text3); }
+.search-inp:focus { border-color:var(--border-glow); }
+.search-go {
+  background:var(--accent); border:none; border-radius:10px;
+  padding:13px 18px; color:#000; font-family:'DM Sans',sans-serif;
+  font-size:14px; font-weight:700; cursor:pointer; white-space:nowrap; transition:opacity .2s;
+}
+.search-go:hover { opacity:.85; }
+.search-hint { font-size:11px; color:var(--text3); margin-bottom:20px; }
+.search-results { display:flex; flex-direction:column; gap:10px; }
+
+/* ── SETTINGS ── */
+.settings-wrap { padding:20px; display:flex; flex-direction:column; gap:14px; }
+.set-group { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; backdrop-filter:blur(14px); }
+.set-group-label { padding:12px 16px 6px; font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); }
+.set-row { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-top:1px solid var(--border); }
+.set-row-label { font-size:14px; color:var(--text); }
+.set-row-sub { font-size:11px; color:var(--text3); margin-top:2px; }
+.set-row-val { font-size:12px; color:var(--text2); }
+.toggle { width:44px; height:26px; border-radius:13px; background:var(--text3); position:relative; cursor:pointer; transition:background .2s; flex-shrink:0; }
+.toggle.on { background:var(--accent); }
+.toggle::after { content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform .2s; }
+.toggle.on::after { transform:translateX(18px); }
+.range-row { padding:10px 16px 16px; border-top:1px solid var(--border); }
+input[type=range] { width:100%; accent-color:var(--accent); }
+.time-inp { background:transparent; border:none; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--accent); outline:none; cursor:pointer; }
+.notif-topic-row { display:flex; align-items:center; justify-content:space-between; padding:11px 16px; border-top:1px solid var(--border); gap:8px; }
+.ntopic-name { font-size:13px; color:var(--text); flex:1; }
+.npills { display:flex; gap:7px; }
+.npill { padding:4px 9px; border-radius:20px; font-size:10px; font-weight:600; cursor:pointer; border:1px solid var(--border); color:var(--text3); background:transparent; transition:all .2s; font-family:'DM Sans',sans-serif; }
+.npill.breaking.on { background:rgba(248,113,113,.14); border-color:var(--red); color:var(--red); }
+.npill.normal.on { background:var(--accent-glow); border-color:var(--accent); color:var(--accent); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:480px;
+  background:var(--nav); backdrop-filter:blur(24px);
+  border-top:1px solid var(--border);
+  display:flex; z-index:200;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:12px 0 13px; cursor:pointer; color:var(--text3); transition:color .2s; position:relative; }
+.nav-item.active { color:var(--accent); }
+.nav-item.active::before { content:''; position:absolute; top:0; left:18%; right:18%; height:1px; background:var(--accent); box-shadow:0 0 8px var(--accent); }
+.nav-icon { font-size:19px; }
+.nav-label { font-size:10px; font-weight:500; letter-spacing:.04em; }
+
+/* ── BANNER ── */
+.banner {
+  position:fixed; top:70px; left:50%;
+  transform:translateX(-50%) translateY(-140px);
+  width:calc(100% - 40px); max-width:440px;
+  background:var(--card); border:1px solid var(--border-glow);
+  border-radius:14px; padding:14px 16px;
+  display:flex; align-items:flex-start; gap:12px;
+  backdrop-filter:blur(22px); z-index:500;
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+.banner.show { transform:translateX(-50%) translateY(0); }
+.b-icon { font-size:21px; flex-shrink:0; }
+.b-text { flex:1; }
+.b-title { font-size:13px; font-weight:600; margin-bottom:2px; }
+.b-body { font-size:12px; color:var(--text2); }
+.b-close { font-size:16px; color:var(--text3); cursor:pointer; padding:0 4px; flex-shrink:0; }
+
+.detail-back { display:flex; align-items:center; gap:8px; padding:13px 20px; border-bottom:1px solid var(--border); font-size:13px; color:var(--accent); cursor:pointer; font-weight:600; }
+
+::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--text3);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- BANNER -->
+<div class="banner" id="banner">
+  <div class="b-icon">🔔</div>
+  <div class="b-text"><div class="b-title" id="b-title"></div><div class="b-body" id="b-body"></div></div>
+  <div class="b-close" onclick="closeBanner()">✕</div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo"><em>X</em>/News</div>
+  <div class="live-chip"><div class="live-dot"></div>Live</div>
+</div>
+
+<!-- ════ BRIEF ════ -->
+<div class="page active" id="page-brief">
+  <div class="brief-hero">
+    <div class="eyebrow">Today's Brief</div>
+    <div class="brief-title" id="brief-date">—</div>
+    <div class="brief-sub" id="brief-sub">Fetching live headlines…</div>
+  </div>
+  <div class="refresh-row">
+    <button class="refresh-btn" id="refresh-btn" onclick="loadBrief()">
+      <span class="spin-icon">↻</span> Refresh
+    </button>
+  </div>
+  <div class="story-list" id="brief-list">
+    <div class="state-loading"><div class="big-spin"></div><span>Loading your brief…</span></div>
+  </div>
+</div>
+
+<!-- ════ TOPICS ════ -->
+<div class="page" id="page-topics">
+  <div class="page-header"><h1>Topics</h1><p>Pick a topic to dive into the latest headlines.</p></div>
+  <div class="topics-grid" id="topics-grid"></div>
+</div>
+
+<!-- ════ TOPIC DETAIL ════ -->
+<div class="page" id="page-topic-detail">
+  <div class="detail-back" onclick="showPage('topics')">← Topics</div>
+  <div class="page-header" style="padding-top:16px;">
+    <h1 id="td-title">—</h1><p id="td-count"></p>
+  </div>
+  <div class="story-list" id="td-list">
+    <div class="state-loading"><div class="big-spin"></div><span>Loading stories…</span></div>
+  </div>
+</div>
+
+<!-- ════ SEARCH ════ -->
+<div class="page" id="page-search">
+  <div class="page-header"><h1>Search</h1><p>Search any story across all topics and live news.</p></div>
+  <div class="search-wrap">
+    <div class="search-row">
+      <input class="search-inp" id="search-q" placeholder="Search any topic or story…" onkeydown="if(event.key==='Enter')doSearch()">
+      <button class="search-go" onclick="doSearch()">Search</button>
+    </div>
+    <div class="search-hint">Searches all topic feeds + live GNews results</div>
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<!-- ════ SETTINGS ════ -->
+<div class="page" id="page-settings">
+  <div class="page-header"><h1>Settings</h1></div>
+  <div class="settings-wrap">
+
+    <div class="set-group">
+      <div class="set-group-label">Notifications</div>
+      <div class="set-row">
+        <div><div class="set-row-label">Enable Notifications</div><div class="set-row-sub">Requires browser permission</div></div>
+        <div class="toggle" id="toggle-notif" onclick="toggleNotif()"></div>
+      </div>
+      <div class="set-row">
+        <div><div class="set-row-label">Daily Brief Time</div><div class="set-row-sub">Sent every day at this time</div></div>
+        <input class="time-inp" type="time" id="brief-time-inp" value="07:00" onchange="saveBriefTime()">
+      </div>
+    </div>
+
+    <div class="set-group">
+      <div class="set-group-label">Topic Notifications</div>
+      <div style="padding:9px 16px 5px;font-size:11px;color:var(--text3);">Breaking = instant · Normal = batched</div>
+      <div id="notif-topic-rows"></div>
+    </div>
+
+    <div class="set-group">
+      <div class="set-group-label">Feed</div>
+      <div class="set-row">
+        <div class="set-row-label">Stories in Brief</div>
+        <span class="set-row-val" id="brief-count-val">12</span>
+      </div>
+      <div class="range-row">
+        <input type="range" min="4" max="30" value="12" id="brief-count-slider"
+          oninput="briefCount=+this.value;document.getElementById('brief-count-val').textContent=this.value;localStorage.setItem('briefCount',this.value);">
+      </div>
+      <div class="set-row" style="border-top:1px solid var(--border);">
+        <div class="set-row-label">Stories per topic</div>
+        <span class="set-row-val" id="topic-count-val">8</span>
+      </div>
+      <div class="range-row">
+        <input type="range" min="3" max="20" value="8" id="topic-count-slider"
+          oninput="topicCount=+this.value;document.getElementById('topic-count-val').textContent=this.value;localStorage.setItem('topicCount',this.value);">
+      </div>
+    </div>
+
+    <div class="set-group">
+      <div class="set-group-label">About</div>
+      <div class="set-row"><span class="set-row-label">Version</span><span class="set-row-val">2.0.0</span></div>
+      <div class="set-row"><span class="set-row-label">News source</span><span class="set-row-val">GNews API</span></div>
+      <div class="set-row"><span class="set-row-label">AI</span><span class="set-row-val">Gemini 1.5 Flash</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ STORY PANEL ════ -->
+<div class="panel" id="story-panel">
+  <div class="panel-bar">
+    <div class="back-btn" onclick="closePanel()">← Back</div>
+    <div class="live-chip"><div class="live-dot"></div>Live</div>
+  </div>
+  <div class="panel-body">
+    <div class="panel-tag" id="p-tag"></div>
+    <div class="panel-headline" id="p-headline"></div>
+    <div class="panel-meta" id="p-meta"></div>
+    <div class="section-label">Key Points</div>
+    <ul class="panel-bullets" id="p-bullets"></ul>
+    <div class="section-label">In-Depth Summary</div>
+    <div class="panel-summary" id="p-summary"></div>
+    <a class="read-more" id="p-readmore" href="#" target="_blank" rel="noopener">Read Full Article →</a>
+    <div class="ask-box">
+      <div class="ask-label">✦ Ask AI about this story</div>
+      <div class="ask-msgs" id="ask-msgs"></div>
+      <div class="ask-row">
+        <input class="ask-input" id="ask-inp" placeholder="Ask anything about this story…" onkeydown="if(event.key==='Enter')sendAsk()">
+        <button class="ask-send" onclick="sendAsk()">Ask</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-brief" onclick="showPage('brief')"><div class="nav-icon">📰</div><div class="nav-label">Brief</div></div>
+  <div class="nav-item" id="nav-topics" onclick="showPage('topics')"><div class="nav-icon">🗂</div><div class="nav-label">Topics</div></div>
+  <div class="nav-item" id="nav-search" onclick="showPage('search')"><div class="nav-icon">🔍</div><div class="nav-label">Search</div></div>
+  <div class="nav-item" id="nav-settings" onclick="showPage('settings')"><div class="nav-icon">⚙️</div><div class="nav-label">Settings</div></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CONFIG  — replace GNEWS_KEY with your free key from gnews.io
+// ══════════════════════════════════════════════
+const GEMINI_KEY  = 'AIzaSyDDMvdYYPeKkpFiCUFVyKDhS8i9fCk24To';
+const GNEWS_KEY   = 'YOUR_GNEWS_KEY'; // get free at gnews.io/register
+const GEMINI_URL  = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GNEWS_URL   = 'https://gnews.io/api/v4';
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let briefCount    = 12;
+let topicCount    = 8;
+let notifEnabled  = false;
+let briefTime     = '07:00';
+let notifSettings = {};
+let currentStory  = null;
+let askHistory    = [];
+let briefTimer    = null;
+let lastBreaking  = Date.now() - 30 * 60000;
+const cache       = {};
+
+// ══════════════════════════════════════════════
+//  TOPICS
+// ══════════════════════════════════════════════
+const TOPICS = [
+  { id:'au',      name:'Australian News',      icon:'🦘', q:'Australia',          cat:'general',  country:'au' },
+  { id:'world',   name:'World News',           icon:'🌏', q:'world news',         cat:'general',  country:''   },
+  { id:'biz',     name:'Business & Markets',   icon:'📈', q:'business finance',   cat:'business', country:''   },
+  { id:'tech',    name:'Technology',           icon:'💻', q:'technology',         cat:'technology',country:'' },
+  { id:'ai',      name:'AI',                   icon:'🤖', q:'artificial intelligence', cat:'technology',country:'' },
+  { id:'crypto',  name:'Crypto',               icon:'₿',  q:'cryptocurrency bitcoin', cat:'general', country:'' },
+  { id:'science', name:'Science & Innovation', icon:'🔬', q:'science',            cat:'science',  country:''   },
+  { id:'health',  name:'Health & Wellness',    icon:'🏥', q:'health',             cat:'health',   country:''   },
+  { id:'culture', name:'Culture & Society',    icon:'🎭', q:'culture entertainment', cat:'entertainment',country:'' },
+  { id:'sports',  name:'Sports',               icon:'⚽', q:'sports',             cat:'sports',   country:'au' },
+];
+
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
+function timeAgo(d) {
+  if (!d) return '';
+  const s = (Date.now() - new Date(d)) / 1000;
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.floor(s/60)}m ago`;
+  if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+  return `${Math.floor(s/86400)}d ago`;
+}
+
+// ══════════════════════════════════════════════
+//  GNEWS FETCH  — plain fetch, CORS-open, no proxy needed
+// ══════════════════════════════════════════════
+async function fetchGNews(q, max=10, country='') {
+  try {
+    let url = `${GNEWS_URL}/search?q=${encodeURIComponent(q)}&lang=en&max=${max}&sortby=publishedAt&apikey=${GNEWS_KEY}`;
+    if (country) url += `&country=${country}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.articles) return [];
+    return data.articles.map(a => ({
+      title:    a.title || '',
+      desc:     a.description || '',
+      url:      a.url || '#',
+      source:   a.source?.name || 'GNews',
+      pubDate:  a.publishedAt || '',
+      image:    a.image || '',
+    })).filter(a => a.title);
+  } catch(e) {
+    console.error('GNews fetch error:', e);
+    return [];
+  }
+}
+
+async function fetchTopicStories(topicId, limit) {
+  limit = limit || topicCount;
+  if (cache[topicId] && cache[topicId].ts > Date.now() - 5*60000)
+    return cache[topicId].stories.slice(0, limit);
+
+  const topic = TOPICS.find(t => t.id === topicId);
+  if (!topic) return [];
+
+  const stories = await fetchGNews(topic.q, limit, topic.country);
+  if (stories.length) cache[topicId] = { stories, ts: Date.now() };
+  return stories.slice(0, limit);
+}
+
+// ══════════════════════════════════════════════
+//  GEMINI AI
+// ══════════════════════════════════════════════
+async function callGemini(prompt, sys) {
+  try {
+    const body = {
+      contents: [{ role:'user', parts:[{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: 600, temperature: 0.4 },
+    };
+    if (sys) body.systemInstruction = { parts:[{ text: sys }] };
+    const res = await fetch(`${GEMINI_URL}?key=${GEMINI_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    return data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
+  } catch(e) {
+    console.error('Gemini error:', e);
+    return '';
+  }
+}
+
+async function getBullets(story) {
+  const raw = await callGemini(
+    `Title: "${story.title}"\nDesc: "${story.desc}"\n\nGive exactly 3 bullet points starting with •\n• \n• \n• `,
+    'Return only 3 bullet points starting with •. No intro, no markdown.'
+  );
+  return raw.split('\n').filter(l=>l.trim().startsWith('•')).map(l=>l.replace(/^•\s*/,'').trim()).filter(Boolean);
+}
+
+async function getSummary(story) {
+  return await callGemini(
+    `Title: "${story.title}"\nDesc: "${story.desc}"\n\nWrite a 3-4 sentence summary: what happened, why it matters, what comes next.`,
+    'Write a clear informative summary in flowing prose. No bullet points or markdown.'
+  );
+}
+
+async function askGemini(q, story, history) {
+  const hist = history.map(m=>`${m.r==='u'?'User':'AI'}: ${m.t}`).join('\n');
+  return await callGemini(
+    `Story: "${story.title}"\nDesc: "${story.desc}"\n\nConversation:\n${hist}\n\nUser: ${q}`,
+    'Answer the question about this story clearly in 2-3 sentences.'
+  );
+}
+
+// ══════════════════════════════════════════════
+//  CARD RENDERER
+// ══════════════════════════════════════════════
+function makeCard(story, topicName, idx) {
+  const id = 'c' + Math.random().toString(36).slice(2);
+  const div = document.createElement('div');
+  div.className = 'story-card';
+  div.style.animationDelay = Math.min(idx * .07, .6) + 's';
+  div.dataset.id    = id;
+  div.dataset.title = story.title;
+  div.dataset.desc  = story.desc  || '';
+  div.dataset.url   = story.url   || '#';
+  div.dataset.src   = story.source|| '';
+  div.dataset.pub   = story.pubDate|| '';
+  div.dataset.topic = topicName   || '';
+  div.innerHTML = `
+    ${topicName ? `<div class="topic-tag">${topicName}</div>` : ''}
+    <div class="headline">${story.title}</div>
+    <ul class="bullets" id="bl-${id}">
+      <li class="bullet-loading"><div class="mini-spin"></div>AI summarising…</li>
+    </ul>
+    <div class="story-meta">
+      <span class="story-source">${story.source||'News'}</span>
+      <span class="story-time">${timeAgo(story.pubDate)}</span>
+    </div>
+    <div class="story-actions">
+      <button class="btn-more" onclick="openStory(event,'${id}')">View Summary & More →</button>
+    </div>`;
+  loadBullets(id, story);
+  return div;
+}
+
+async function loadBullets(id, story) {
+  const bullets = await getBullets(story);
+  const el = document.getElementById('bl-' + id);
+  if (!el) return;
+  if (bullets.length)
+    el.innerHTML = bullets.map(b=>`<li>${b}</li>`).join('');
+  else {
+    const t = story.desc ? story.desc.slice(0,130) + (story.desc.length>130?'…':'') : 'No summary.';
+    el.innerHTML = `<li>${t}</li>`;
+  }
+}
+
+// ══════════════════════════════════════════════
+//  PANEL
+// ══════════════════════════════════════════════
+function openStory(e, id) {
+  e.stopPropagation();
+  const card = document.querySelector(`[data-id="${id}"]`);
+  if (!card) return;
+  currentStory = { title:card.dataset.title, desc:card.dataset.desc, url:card.dataset.url, source:card.dataset.src, pubDate:card.dataset.pub, topic:card.dataset.topic };
+  askHistory = [];
+  document.getElementById('p-tag').textContent      = currentStory.topic || currentStory.source;
+  document.getElementById('p-headline').textContent  = currentStory.title;
+  document.getElementById('p-meta').textContent      = `${currentStory.source} · ${timeAgo(currentStory.pubDate)}`;
+  document.getElementById('p-readmore').href         = currentStory.url;
+  document.getElementById('p-bullets').innerHTML     = '<li class="bullet-loading"><div class="mini-spin"></div>Loading key points…</li>';
+  document.getElementById('p-summary').innerHTML     = '<span style="color:var(--text3);font-style:italic;">Loading summary…</span>';
+  document.getElementById('ask-msgs').innerHTML      = '';
+  document.getElementById('ask-inp').value           = '';
+  document.getElementById('story-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  loadPanel();
+}
+
+async function loadPanel() {
+  const [bullets, summary] = await Promise.all([getBullets(currentStory), getSummary(currentStory)]);
+  const be = document.getElementById('p-bullets');
+  if (be) be.innerHTML = bullets.length ? bullets.map(b=>`<li>${b}</li>`).join('') : `<li>${currentStory.desc||'No summary.'}</li>`;
+  const se = document.getElementById('p-summary');
+  if (se) se.textContent = summary || currentStory.desc || 'No summary available.';
+}
+
+function closePanel() {
+  document.getElementById('story-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function sendAsk() {
+  const inp = document.getElementById('ask-inp');
+  const q = inp.value.trim();
+  if (!q || !currentStory) return;
+  inp.value = '';
+  const msgs = document.getElementById('ask-msgs');
+  msgs.innerHTML += `<div class="msg user">${q}</div><div class="msg ai" id="ai-typing">Thinking…</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  askHistory.push({ r:'u', t:q });
+  const ans = await askGemini(q, currentStory, askHistory);
+  const t = document.getElementById('ai-typing');
+  if (t) t.textContent = ans || 'Sorry, could not answer right now.';
+  if (ans) askHistory.push({ r:'a', t:ans });
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ══════════════════════════════════════════════
+//  BRIEF
+// ══════════════════════════════════════════════
+async function loadBrief() {
+  const btn  = document.getElementById('refresh-btn');
+  const list = document.getElementById('brief-list');
+  const sub  = document.getElementById('brief-sub');
+  btn.classList.add('spinning');
+  list.innerHTML = '<div class="state-loading"><div class="big-spin"></div><span>Fetching headlines…</span></div>';
+
+  // Fetch 3 random topics in parallel
+  const picked = [...TOPICS].sort(()=>Math.random()-.5).slice(0,4);
+  const all = [];
+  const results = await Promise.allSettled(picked.map(t => fetchTopicStories(t.id, 3)));
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') r.value.forEach(s => all.push({ ...s, topicName: picked[i].name }));
+  });
+  all.sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate));
+  btn.classList.remove('spinning');
+
+  if (!all.length) {
+    list.innerHTML = '<div class="state-empty">⚠️ Couldn\'t load stories<small>Check your internet connection and try refreshing.</small></div>';
+    sub.textContent = 'No stories loaded';
+    checkGNewsKey();
+    return;
+  }
+  sub.textContent = `Live from ${TOPICS.length} topics · GNews`;
+  list.innerHTML = '';
+  all.slice(0, briefCount).forEach((s,i) => list.appendChild(makeCard(s, s.topicName, i)));
+  checkBreaking(all);
+}
+
+function checkGNewsKey() {
+  if (GNEWS_KEY === 'YOUR_GNEWS_KEY')
+    showBanner('⚙️ GNews key needed', 'Go to gnews.io/register for your free key, then add it to the app.');
+}
+
+// ══════════════════════════════════════════════
+//  TOPICS
+// ══════════════════════════════════════════════
+function renderTopics() {
+  const g = document.getElementById('topics-grid');
+  g.innerHTML = '';
+  TOPICS.forEach((t,i) => {
+    const d = document.createElement('div');
+    d.className = 'topic-card';
+    d.style.animationDelay = Math.min(i*.05,.4)+'s';
+    d.innerHTML = `<div class="t-icon">${t.icon}</div><div class="t-name">${t.name}</div>`;
+    d.onclick = () => openTopic(t.id);
+    g.appendChild(d);
+  });
+}
+
+async function openTopic(id) {
+  const topic = TOPICS.find(t=>t.id===id);
+  if (!topic) return;
+  document.getElementById('td-title').textContent = topic.name;
+  document.getElementById('td-count').textContent = 'Loading…';
+  document.getElementById('td-list').innerHTML = '<div class="state-loading"><div class="big-spin"></div><span>Fetching latest stories…</span></div>';
+  showPage('topic-detail');
+  const stories = await fetchTopicStories(id, topicCount);
+  document.getElementById('td-count').textContent = `${stories.length} stories loaded`;
+  const list = document.getElementById('td-list');
+  if (!stories.length) { list.innerHTML = '<div class="state-empty">⚠️ No stories right now<small>Try refreshing in a moment.</small></div>'; return; }
+  list.innerHTML = '';
+  stories.forEach((s,i) => list.appendChild(makeCard(s, topic.name, i)));
+}
+
+// ══════════════════════════════════════════════
+//  SEARCH
+// ══════════════════════════════════════════════
+async function doSearch() {
+  const q = document.getElementById('search-q').value.trim();
+  if (!q) return;
+  const results = document.getElementById('search-results');
+  results.innerHTML = '<div class="state-loading"><div class="big-spin"></div><span>Searching…</span></div>';
+
+  // Search all cached + live GNews search
+  const cachedAll = Object.values(cache).flatMap(c=>c.stories||[]);
+  const ql = q.toLowerCase();
+  const fromCache = cachedAll.filter(s => s.title?.toLowerCase().includes(ql) || s.desc?.toLowerCase().includes(ql));
+  const fromGNews = await fetchGNews(q, 15);
+  const seen = new Set();
+  const combined = [...fromCache, ...fromGNews].filter(s => {
+    if (!s.title || seen.has(s.title)) return false;
+    seen.add(s.title); return true;
+  }).sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
+
+  results.innerHTML = '';
+  if (!combined.length) { results.innerHTML = `<div class="state-empty">No results for "${q}"</div>`; return; }
+  combined.slice(0,20).forEach((s,i) => results.appendChild(makeCard(s, s.source||'', i)));
+}
+
+// ══════════════════════════════════════════════
+//  NOTIFICATIONS
+// ══════════════════════════════════════════════
+function renderNotifTopics() {
+  const c = document.getElementById('notif-topic-rows');
+  c.innerHTML = '';
+  TOPICS.forEach(t => {
+    const s = notifSettings[t.id] || { breaking:false, normal:false };
+    const row = document.createElement('div');
+    row.className = 'notif-topic-row';
+    row.innerHTML = `<div class="ntopic-name">${t.icon} ${t.name}</div>
+      <div class="npills">
+        <button class="npill breaking ${s.breaking?'on':''}" data-id="${t.id}" data-type="breaking" onclick="toggleNpill(this)">Breaking</button>
+        <button class="npill normal ${s.normal?'on':''}" data-id="${t.id}" data-type="normal" onclick="toggleNpill(this)">Normal</button>
+      </div>`;
+    c.appendChild(row);
+  });
+}
+
+function toggleNpill(btn) {
+  const id=btn.dataset.id, type=btn.dataset.type;
+  if (!notifSettings[id]) notifSettings[id]={breaking:false,normal:false};
+  notifSettings[id][type] = !notifSettings[id][type];
+  btn.classList.toggle('on');
+  localStorage.setItem('notifSettings', JSON.stringify(notifSettings));
+}
+
+async function toggleNotif() {
+  const el = document.getElementById('toggle-notif');
+  if (!notifEnabled) {
+    if (!('Notification' in window)) { showBanner('⚠️ Not supported','This browser doesn\'t support notifications.'); return; }
+    const p = await Notification.requestPermission();
+    if (p!=='granted') { showBanner('⚠️ Denied','Please allow notifications in browser settings.'); return; }
+    notifEnabled=true; el.classList.add('on'); localStorage.setItem('notifEnabled','true');
+    scheduleBrief(); showBanner('🔔 Notifications on','You\'ll receive breaking news and your daily brief.');
+  } else {
+    notifEnabled=false; el.classList.remove('on'); localStorage.setItem('notifEnabled','false');
+    if(briefTimer){clearInterval(briefTimer);briefTimer=null;}
+    showBanner('🔕 Notifications off','Alerts are now off.');
+  }
+}
+
+function pushNotif(title, body) {
+  if (notifEnabled && Notification.permission==='granted') new Notification(title, { body });
+  showBanner(title, body);
+}
+
+function checkBreaking(stories) {
+  if (!notifEnabled) return;
+  stories.filter(s => new Date(s.pubDate) > lastBreaking).forEach(s => {
+    const t = TOPICS.find(t=>t.name===s.topicName);
+    if (!t) return;
+    const ns = notifSettings[t.id]||{};
+    if (ns.breaking) pushNotif(`🔴 Breaking: ${s.topicName}`, s.title);
+    else if (ns.normal) pushNotif(`📰 ${s.topicName}`, s.title);
+  });
+  lastBreaking = Date.now();
+}
+
+function scheduleBrief() {
+  if (briefTimer) clearInterval(briefTimer);
+  if (!notifEnabled) return;
+  briefTimer = setInterval(() => {
+    const n=new Date(), [h,m]=briefTime.split(':').map(Number);
+    if(n.getHours()===h&&n.getMinutes()===m) pushNotif('📰 Your Daily Brief',`Good morning! Your ${briefTime} brief is ready.`);
+  }, 60000);
+}
+
+setInterval(async () => {
+  if (!notifEnabled) return;
+  for (const t of TOPICS) {
+    const ns = notifSettings[t.id]||{};
+    if (!ns.breaking && !ns.normal) continue;
+    const stories = await fetchTopicStories(t.id, 5);
+    checkBreaking(stories.map(s=>({...s,topicName:t.name})));
+  }
+}, 10*60000);
+
+// ══════════════════════════════════════════════
+//  BANNER
+// ══════════════════════════════════════════════
+let bannerTimer;
+function showBanner(title, body) {
+  document.getElementById('b-title').textContent = title;
+  document.getElementById('b-body').textContent  = body;
+  const b=document.getElementById('banner');
+  b.classList.add('show'); clearTimeout(bannerTimer);
+  bannerTimer=setTimeout(()=>b.classList.remove('show'),5000);
+}
+function closeBanner(){document.getElementById('banner').classList.remove('show');}
+
+// ══════════════════════════════════════════════
+//  NAV
+// ══════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg = document.getElementById('page-'+name);
+  if (pg) pg.classList.add('active');
+  const nav = document.getElementById('nav-'+(name==='topic-detail'?'topics':name));
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════════
+//  SETTINGS PERSISTENCE
+// ══════════════════════════════════════════════
+function saveBriefTime(){ briefTime=document.getElementById('brief-time-inp').value; localStorage.setItem('briefTime',briefTime); scheduleBrief(); }
+
+function loadSaved() {
+  try {
+    notifSettings = JSON.parse(localStorage.getItem('notifSettings')||'{}');
+    briefTime = localStorage.getItem('briefTime')||'07:00';
+    document.getElementById('brief-time-inp').value = briefTime;
+    notifEnabled = localStorage.getItem('notifEnabled')==='true';
+    if(notifEnabled) document.getElementById('toggle-notif').classList.add('on');
+    const bc=localStorage.getItem('briefCount');
+    if(bc){briefCount=+bc;document.getElementById('brief-count-slider').value=bc;document.getElementById('brief-count-val').textContent=bc;}
+    const tc=localStorage.getItem('topicCount');
+    if(tc){topicCount=+tc;document.getElementById('topic-count-slider').value=tc;document.getElementById('topic-count-val').textContent=tc;}
+  } catch(e){}
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+function init() {
+  document.getElementById('brief-date').textContent = new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+  loadSaved();
+  renderTopics();
+  renderNotifTopics();
+  if(notifEnabled) scheduleBrief();
+  // Check key then load
+  if (GNEWS_KEY === 'YOUR_GNEWS_KEY') {
+    setTimeout(()=>showBanner('⚙️ Setup needed','Add your free GNews key — see instructions below the app.'),1500);
+  }
+  loadBrief();
+}
+
+init();
+</script>
+</body>
+</html>
