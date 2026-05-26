@@ -250,7 +250,7 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
       </div>
       <div class="range-row">
         <input type="range" min="4" max="30" value="12" id="brief-count-slider"
-          oninput="briefCount=+this.value;document.getElementById('brief-count-val').textContent=this.value;localStorage.setItem('briefCount',this.value);">
+          oninput="briefCount=+this.value;document.getElementById('brief-count-val').textContent=this.value;localStorage.setItem('briefCount',this.value);Object.keys(cache).forEach(k=>delete cache[k]);">
       </div>
       <div class="set-row" style="border-top:1px solid var(--border);">
         <div class="set-row-label">Stories per topic</div>
@@ -258,7 +258,7 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
       </div>
       <div class="range-row">
         <input type="range" min="3" max="20" value="8" id="topic-count-slider"
-          oninput="topicCount=+this.value;document.getElementById('topic-count-val').textContent=this.value;localStorage.setItem('topicCount',this.value);">
+          oninput="topicCount=+this.value;document.getElementById('topic-count-val').textContent=this.value;localStorage.setItem('topicCount',this.value);Object.keys(cache).forEach(k=>delete cache[k]);">
       </div>
     </div>
     <div class="set-group">
@@ -372,13 +372,16 @@ function highlight(text,query){
 // ── FETCH ──
 async function fetchNews(topic,limit){
   limit=limit||topicCount;
-  if(cache[topic]&&cache[topic].ts>Date.now()-5*60000)
+  // Only use cache if it has enough stories AND is fresh
+  if(cache[topic]&&cache[topic].ts>Date.now()-5*60000&&cache[topic].stories.length>=limit)
     return cache[topic].stories.slice(0,limit);
   try{
     const res=await fetch(`${WORKER}/news?topic=${topic}&limit=${limit}`);
     const data=await res.json();
     if(data.ok&&data.stories.length){
-      cache[topic]={stories:data.stories,ts:Date.now()};
+      // Always store the full result so cache grows
+      if(!cache[topic]||data.stories.length>=(cache[topic].stories||[]).length)
+        cache[topic]={stories:data.stories,ts:Date.now()};
       return data.stories.slice(0,limit);
     }
   }catch(e){console.error('fetchNews error:',e);}
@@ -394,33 +397,58 @@ async function searchNews(q,limit){
 }
 
 // ── AI via Worker ──
-async function workerAI(path,body){
-  try{
-    const res=await fetch(`${WORKER}${path}`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(body),
+async function workerPOST(path, body) {
+  try {
+    const res = await fetch(`${WORKER}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
-    const data=await res.json();
-    if(!data.ok){console.error('Worker AI error:',data.error);return null;}
-    return data.text||null;
-  }catch(e){console.error('workerAI error:',e);return null;}
+    return await res.json();
+  } catch(e) {
+    console.error('workerPOST error:', path, e);
+    return { ok: false, error: e.message };
+  }
 }
 
-async function getBullets(story){
-  const raw=await workerAI('/ai/bullets',{title:story.title,desc:story.desc});
-  if(!raw)return[];
-  return raw.split('\n').filter(l=>l.trim().startsWith('•')).map(l=>l.replace(/^•\s*/,'').trim()).filter(Boolean);
-}
+// Story AI cache — avoid re-calling for same story
+const storyAICache = {};
 
-async function getSummary(story){
-  return await workerAI('/ai/summary',{title:story.title,desc:story.desc});
-}
-
-async function askGemini(q,story,history){
-  return await workerAI('/ai/ask',{
-    title:story.title,desc:story.desc,source:story.source,question:q,history,
+async function getStoryAI(story) {
+  const key = story.title;
+  if (storyAICache[key]) return storyAICache[key];
+  const data = await workerPOST('/ai/story', {
+    title: story.title,
+    desc: story.desc || story.title || '',
   });
+  if (data.ok) {
+    storyAICache[key] = { bullets: data.bullets || [], summary: data.summary || '' };
+  } else {
+    storyAICache[key] = { bullets: [], summary: '' };
+  }
+  return storyAICache[key];
+}
+
+async function getBullets(story) {
+  const ai = await getStoryAI(story);
+  return ai.bullets;
+}
+
+async function getSummary(story) {
+  const ai = await getStoryAI(story);
+  return ai.summary;
+}
+
+async function askGemini(q, story, history) {
+  const data = await workerPOST('/ai/ask', {
+    title: story.title,
+    desc: story.desc || '',
+    source: story.source || '',
+    topic: story.topic || '',
+    question: q,
+    history,
+  });
+  return data.ok ? data.text : null;
 }
 
 // ── CARD ──
@@ -451,6 +479,7 @@ function makeCard(story,topicName,idx,isTop,searchQuery){
     ?`<img class="card-image" src="${story.image}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-image-placeholder>${icon}</div>'">`
     :`<div class="card-image-placeholder">${icon}</div>`;
 
+  const descHTML=searchQuery&&story.desc?`<div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5;">${highlight(story.desc.slice(0,150)+(story.desc.length>150?'…':''),searchQuery)}</div>`:'';
   div.innerHTML=`
     ${imageHTML}
     <div class="card-body">
@@ -460,6 +489,7 @@ function makeCard(story,topicName,idx,isTop,searchQuery){
       </div>
       ${topicName?`<div class="topic-tag">${topicName}</div>`:''}
       <div class="headline">${titleHTML}</div>
+      ${descHTML}
       <ul class="bullets" id="bl-${id}">
         <li class="bullet-loading"><div class="mini-spin"></div>AI summarising…</li>
       </ul>
@@ -521,11 +551,16 @@ function openStory(e,id){
 }
 
 async function loadPanel(){
-  const[bullets,summary]=await Promise.all([getBullets(currentStory),getSummary(currentStory)]);
+  const ai=await getStoryAI(currentStory);
   const be=document.getElementById('p-bullets');
-  if(be)be.innerHTML=bullets.length?bullets.map(b=>`<li>${b}</li>`).join(''):`<li>${currentStory.desc||'No summary.'}</li>`;
+  if(be){
+    if(ai.bullets&&ai.bullets.length)
+      be.innerHTML=ai.bullets.map(b=>`<li>${b}</li>`).join('');
+    else
+      be.innerHTML=`<li>${currentStory.desc?currentStory.desc.slice(0,100)+'…':'No key points available.'}</li>`;
+  }
   const se=document.getElementById('p-summary');
-  if(se)se.textContent=summary||currentStory.desc||'No summary available.';
+  if(se)se.textContent=ai.summary||currentStory.desc||'No summary available.';
 }
 
 function closePanel(){
@@ -613,11 +648,28 @@ async function doSearch(){
   const q=document.getElementById('search-q').value.trim();
   if(!q)return;
   const results=document.getElementById('search-results');
-  results.innerHTML='<div class="state-loading"><div class="big-spin"></div><span>Searching…</span></div>';
-  const stories=await searchNews(q,15);
+  results.innerHTML='<div class="state-loading"><div class="big-spin"></div><span>Searching all sources…</span></div>';
+
+  // Worker searches ALL feeds and filters by query
+  const stories=await searchNews(q,20);
+
   results.innerHTML='';
-  if(!stories.length){results.innerHTML=`<div class="state-empty">No results for "${q}"</div>`;return;}
-  stories.forEach((s,i)=>results.appendChild(makeCard(s,s.source||'',i,false,q)));
+  if(!stories.length){
+    results.innerHTML=`<div class="state-empty">No results found for "<strong>${q}</strong>"<small>Try a different keyword.</small></div>`;
+    return;
+  }
+
+  // Show count
+  const countEl=document.createElement('div');
+  countEl.style.cssText='font-size:12px;color:var(--text3);margin-bottom:12px;padding:0 0 4px;';
+  countEl.textContent=`${stories.length} result${stories.length===1?'':'s'} for "${q}"`;
+  results.appendChild(countEl);
+
+  stories.forEach((s,i)=>{
+    // Find topic name from source
+    const topicName=s.topicName||s.source||'';
+    results.appendChild(makeCard(s,topicName,i,false,q));
+  });
 }
 
 // ── NOTIFICATIONS ──
