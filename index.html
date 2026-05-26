@@ -315,11 +315,11 @@ input[type=range]{width:100%;accent-color:var(--accent);}
       <div class="panel-byline" id="p-byline"></div>
       <div class="panel-meta" id="p-meta"></div>
       <div class="section-box">
-        <div class="section-label">KEY POINTS <span>🤖</span></div>
+        <div class="section-label">KEY POINTS</div>
         <ul class="panel-bullets" id="p-bullets"></ul>
       </div>
       <div class="section-box">
-        <div class="section-label">IN DEPTH <span>🤖</span></div>
+        <div class="section-label">IN DEPTH</div>
         <div class="panel-summary" id="p-summary"></div>
         <div class="continue-reading">Continue reading at <a id="p-source-link" href="#" target="_blank" rel="noopener"></a></div>
       </div>
@@ -353,8 +353,7 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 
 <script>
 const WORKER = 'https://xnews-worker.xbondin.workers.dev';
-const GEMINI_KEY = 'AIzaSyDDMvdYYPeKkpFiCUFVyKDhS8i9fCk24To';
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+// AI handled securely via Cloudflare Worker — no keys in frontend
 
 let briefCount=12, topicCount=8;
 let notifEnabled=false, briefTime='07:00';
@@ -423,38 +422,36 @@ async function searchNews(q, limit) {
   return data.ok ? data.stories : [];
 }
 
-// ── GEMINI ──
-async function callGemini(prompt, sys) {
+// ── AI via Cloudflare Worker (Gemini key stored securely server-side) ──
+async function workerAI(path, body) {
   try {
-    const body={contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:600,temperature:0.4}};
-    if(sys) body.systemInstruction={parts:[{text:sys}]};
-    const res=await fetch(`${GEMINI_URL}?key=${GEMINI_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const data=await res.json();
-    return data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
-  } catch(e){return '';}
+    const res = await fetch(`${WORKER}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    return data.ok ? data.text : '';
+  } catch(e) { return ''; }
 }
 
 async function getBullets(story) {
-  const raw=await callGemini(
-    `Title: "${story.title}"\nDescription: "${story.desc}"\n\nGive exactly 3 bullet points:\n• \n• \n• `,
-    'Return only 3 bullet points starting with •. No intro, no markdown.'
-  );
+  const raw = await workerAI('/ai/bullets', { title: story.title, desc: story.desc });
   return raw.split('\n').filter(l=>l.trim().startsWith('•')).map(l=>l.replace(/^•\s*/,'').trim()).filter(Boolean);
 }
 
 async function getSummary(story) {
-  return await callGemini(
-    `Title: "${story.title}"\nDescription: "${story.desc}"\n\nWrite a 3-4 sentence summary: what happened, why it matters, what comes next.`,
-    'Write a clear informative summary in flowing prose. No bullet points or markdown.'
-  );
+  return await workerAI('/ai/summary', { title: story.title, desc: story.desc });
 }
 
 async function askGemini(q, story, history) {
-  const hist=history.map(m=>`${m.r==='u'?'User':'AI'}: ${m.t}`).join('\n');
-  return await callGemini(
-    `Story: "${story.title}"\nDesc: "${story.desc}"\n\nConversation:\n${hist}\n\nUser: ${q}`,
-    'Answer the question about this story clearly in 2-3 sentences.'
-  );
+  return await workerAI('/ai/ask', {
+    title: story.title,
+    desc: story.desc,
+    source: story.source,
+    question: q,
+    history,
+  });
 }
 
 // ── CARD ──
@@ -588,10 +585,16 @@ async function loadBrief(){
   const sub=document.getElementById('brief-sub');
   btn.classList.add('spinning');
   list.innerHTML='<div class="state-loading"><div class="big-spin"></div><span>Fetching headlines…</span></div>';
-  const picked=[...TOPICS].sort(()=>Math.random()-.5).slice(0,4);
+  // Fetch from all topics, distribute stories evenly
+  const storiesPerTopicForBrief = Math.ceil(briefCount / TOPICS.length) + 1;
   const all=[];
-  const results=await Promise.allSettled(picked.map(t=>fetchNews(t.id,3)));
-  results.forEach((r,i)=>{if(r.status==='fulfilled')r.value.forEach(s=>all.push({...s,topicName:picked[i].name}));});
+  const results=await Promise.allSettled(TOPICS.map(t=>fetchNews(t.id, storiesPerTopicForBrief)));
+  const seen = new Set();
+  results.forEach((r,i)=>{
+    if(r.status==='fulfilled') r.value.forEach(s=>{
+      if(!seen.has(s.title)){seen.add(s.title);all.push({...s,topicName:TOPICS[i].name});}
+    });
+  });
   all.sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
   btn.classList.remove('spinning');
   if(!all.length){
@@ -625,7 +628,10 @@ async function openTopic(id){
   document.getElementById('td-count').textContent='Loading…';
   document.getElementById('td-list').innerHTML='<div class="state-loading"><div class="big-spin"></div><span>Fetching stories…</span></div>';
   showPage('topic-detail');
-  const stories=await fetchNews(id,topicCount);
+  const raw=await fetchNews(id,topicCount);
+  // Deduplicate by title
+  const seen=new Set();
+  const stories=raw.filter(s=>{if(!s.title||seen.has(s.title))return false;seen.add(s.title);return true;}).slice(0,topicCount);
   document.getElementById('td-count').textContent=`${stories.length} of ${topicCount} · updated just now`;
   const list=document.getElementById('td-list');
   if(!stories.length){list.innerHTML='<div class="state-empty">⚠️ No stories right now<small>Try refreshing.</small></div>';return;}
@@ -673,9 +679,12 @@ async function toggleNotif(){
   if(!notifEnabled){
     if(!('Notification' in window)){showBanner('⚠️ Not supported','Notifications not supported in this browser.');return;}
     const p=await Notification.requestPermission();
-    if(p!=='granted'){showBanner('⚠️ Denied','Allow notifications in browser settings.');return;}
+    if(p!=='granted'){showBanner('⚠️ Denied','Please allow notifications in your browser settings then try again.');return;}
     notifEnabled=true;el.classList.add('on');localStorage.setItem('notifEnabled','true');
-    scheduleBrief();showBanner('🔔 Notifications on','You\'ll receive breaking news and your daily brief.');
+    scheduleBrief();
+    showBanner('🔔 Notifications on','You'll receive breaking news alerts and your daily brief.');
+    // Test notification so user knows it works
+    setTimeout(()=>pushNotif('✅ X/News','Notifications are working! You'll be alerted when stories break.'),500);
   } else {
     notifEnabled=false;el.classList.remove('on');localStorage.setItem('notifEnabled','false');
     if(briefTimer){clearInterval(briefTimer);briefTimer=null;}
@@ -683,8 +692,10 @@ async function toggleNotif(){
   }
 }
 
-function pushNotif(title,body){
-  if(notifEnabled&&Notification.permission==='granted') new Notification(title,{body});
+function pushNotif(title,body,tag){
+  if(notifEnabled&&Notification.permission==='granted'){
+    new Notification(title,{body, icon:'/favicon.ico', tag: tag||title, renotify:!!tag});
+  }
   showBanner(title,body);
 }
 
@@ -693,8 +704,9 @@ function checkBreaking(stories){
   stories.filter(s=>new Date(s.pubDate)>lastBreaking).forEach(s=>{
     const t=TOPICS.find(t=>t.name===s.topicName);if(!t) return;
     const ns=notifSettings[t.id]||{};
-    if(ns.breaking) pushNotif(`🔴 Breaking: ${s.topicName}`,s.title);
-    else if(ns.normal) pushNotif(`📰 ${s.topicName}`,s.title);
+    const tag=s.url||s.title;
+    if(ns.breaking) pushNotif(`🔴 Breaking: ${s.topicName}`,s.title,tag);
+    else if(ns.normal) pushNotif(`📰 ${s.topicName}`,s.title,tag);
   });
   lastBreaking=Date.now();
 }
