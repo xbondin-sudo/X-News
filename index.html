@@ -454,8 +454,16 @@ async function askGemini(q, story, history) {
   });
 }
 
+// ── SEARCH HIGHLIGHT ──
+function highlight(text, query) {
+  if (!query || !text) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  return text.replace(regex, '<mark style="background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;padding:0 2px;">$1</mark>');
+}
+
 // ── CARD ──
-function makeCard(story, topicName, idx, isTop) {
+function makeCard(story, topicName, idx, isTop, searchQuery) {
   const id='c'+Math.random().toString(36).slice(2);
   const div=document.createElement('div');
   div.className='story-card';
@@ -487,7 +495,7 @@ function makeCard(story, topicName, idx, isTop) {
         <span class="card-time">${timeAgo(story.pubDate)}</span>
       </div>
       ${topicName?`<div class="topic-tag">${topicName}</div>`:''}
-      <div class="headline">${story.title}</div>
+      <div class="headline">${searchQuery ? highlight(story.title, searchQuery) : story.title}</div>
       <ul class="bullets" id="bl-${id}">
         <li class="bullet-loading"><div class="mini-spin"></div>AI summarising…</li>
       </ul>
@@ -648,7 +656,7 @@ async function doSearch(){
   const stories=await searchNews(q,15);
   results.innerHTML='';
   if(!stories.length){results.innerHTML=`<div class="state-empty">No results for "${q}"</div>`;return;}
-  stories.forEach((s,i)=>results.appendChild(makeCard(s,s.source||'',i,false)));
+  stories.forEach((s,i)=>results.appendChild(makeCard(s,s.source||'',i,false,q)));
 }
 
 // ── NOTIFICATIONS ──
