@@ -431,8 +431,15 @@ async function workerAI(path, body) {
       body: JSON.stringify(body),
     });
     const data = await res.json();
-    return data.ok ? data.text : '';
-  } catch(e) { return ''; }
+    if (!data.ok) {
+      console.error('Worker AI error:', data.error);
+      return null;
+    }
+    return data.text || null;
+  } catch(e) {
+    console.error('workerAI fetch error:', e);
+    return null;
+  }
 }
 
 async function getBullets(story) {
@@ -581,7 +588,7 @@ async function sendAsk(){
   askHistory.push({r:'u',t:q});
   const ans=await askGemini(q,currentStory,askHistory);
   const t=document.getElementById('ai-typing');
-  if(t) t.textContent=ans||'Sorry, could not answer right now.';
+  if(t) t.textContent=ans||'I was unable to get a response. Please check that your Gemini API key is set correctly in the Cloudflare Worker settings.';
   if(ans) askHistory.push({r:'a',t:ans});
   msgs.scrollTop=msgs.scrollHeight;
 }
