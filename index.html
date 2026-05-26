@@ -54,7 +54,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .topic-tag{font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
 .topic-tag::before{content:'';width:14px;height:1px;background:var(--accent);opacity:.45;}
 .headline{font-family:'Playfair Display',serif;font-size:17px;line-height:1.35;margin-bottom:12px;}
-.bullets{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:14px;min-height:50px;}
+.bullets{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:14px;min-height:auto;}
 .bullets li{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.55;color:var(--text2);}
 .bullets li::before{content:'·';color:var(--accent);flex-shrink:0;}
 .bullet-loading{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);font-style:italic;}
@@ -217,7 +217,7 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
       <input class="search-inp" id="search-q" placeholder="Search any topic or story…" onkeydown="if(event.key==='Enter')doSearch()">
       <button class="search-go" onclick="doSearch()">Search</button>
     </div>
-    <div class="search-hint">Searches BBC, Guardian, Sky News, Reuters and more</div>
+    <div class="search-hint">Searches all topics · results within last month · newest first</div>
     <div class="search-results" id="search-results"></div>
   </div>
 </div>
@@ -338,7 +338,7 @@ const TOPICS=[
   {id:'crypto',name:'Crypto',icon:'₿'},
   {id:'science',name:'Science & Innovation',icon:'🔬'},
   {id:'health',name:'Health & Wellness',icon:'🏥'},
-  {id:'culture',name:'Culture & Society',icon:'🎭'},
+  {id:'australian-sports',name:'Australian Sports',icon:'🏉'},
   {id:'sports',name:'Sports',icon:'⚽'},
 ];
 
@@ -504,13 +504,21 @@ function makeCard(story,topicName,idx,isTop,searchQuery){
 }
 
 async function loadBullets(id,story){
-  const bullets=await getBullets(story);
+  const ai=await getStoryAI(story);
   const el=document.getElementById('bl-'+id);
   if(!el)return;
-  if(bullets.length)el.innerHTML=bullets.map(b=>`<li>${b}</li>`).join('');
-  else{
-    const t=story.desc?story.desc.slice(0,130)+(story.desc.length>130?'…':''):'No summary available.';
-    el.innerHTML=`<li>${t}</li>`;
+  if(ai.bullets&&ai.bullets.length>=1){
+    // Always show all 3 bullet points
+    el.innerHTML=ai.bullets.map(b=>`<li>${b}</li>`).join('');
+  } else {
+    // Fallback: generate 3 points from desc
+    const desc=story.desc||story.title||'';
+    const sentences=(desc.match(/[^.!?]+[.!?]+/g)||[desc]).slice(0,3).map(s=>s.trim()).filter(Boolean);
+    if(sentences.length){
+      el.innerHTML=sentences.map(p=>`<li>${p}</li>`).join('');
+    } else {
+      el.innerHTML=`<li>${desc.slice(0,100)}</li>`;
+    }
   }
 }
 
@@ -579,7 +587,15 @@ async function sendAsk(){
   askHistory.push({r:'u',t:q});
   const ans=await askGemini(q,currentStory,askHistory);
   const t=document.getElementById('ai-typing');
-  if(t)t.textContent=ans||'Unable to get a response. Please ensure the GEMINI_KEY secret is set in your Cloudflare Worker.';
+  if(t){
+    if(ans){
+      t.textContent=ans;
+    } else {
+      t.textContent='Unable to get a response right now. Please try again in a moment.';
+      t.style.color='var(--text3)';
+      t.style.fontStyle='italic';
+    }
+  }
   if(ans)askHistory.push({r:'a',t:ans});
   msgs.scrollTop=msgs.scrollHeight;
 }
@@ -666,7 +682,6 @@ async function doSearch(){
   results.appendChild(countEl);
 
   stories.forEach((s,i)=>{
-    // Find topic name from source
     const topicName=s.topicName||s.source||'';
     results.appendChild(makeCard(s,topicName,i,false,q));
   });
