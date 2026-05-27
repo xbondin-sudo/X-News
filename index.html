@@ -7,28 +7,32 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#060810; --surface:rgba(255,255,255,0.03); --surface2:rgba(255,255,255,0.055);
-  --border:rgba(255,255,255,0.08); --border-glow:rgba(100,180,255,0.3);
-  --accent:#64b4ff; --accent2:#a78bfa; --accent-glow:rgba(100,180,255,0.12);
-  --green:#34d399; --green-glow:rgba(52,211,153,0.12); --red:#f87171;
-  --text:#eef2ff; --text2:#7986a8; --text3:#3d4a66;
-  --card:rgba(6,10,22,0.82); --nav:rgba(6,8,16,0.96);
+:root{
+  --bg:#060810;--surface:rgba(255,255,255,0.03);--surface2:rgba(255,255,255,0.055);
+  --border:rgba(255,255,255,0.08);--border-glow:rgba(100,180,255,0.3);
+  --accent:#64b4ff;--accent2:#a78bfa;--accent-glow:rgba(100,180,255,0.12);
+  --green:#34d399;--green-glow:rgba(52,211,153,0.12);--red:#f87171;
+  --text:#eef2ff;--text2:#7986a8;--text3:#3d4a66;
+  --card:rgba(6,10,22,0.82);--nav:rgba(6,8,16,0.96);
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 50% at 50% -5%,rgba(100,180,255,0.07) 0%,transparent 65%),radial-gradient(ellipse 50% 35% at 85% 85%,rgba(167,139,250,0.05) 0%,transparent 55%);}
+/* TOPBAR */
 .topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:15px 20px 13px;background:var(--nav);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
 .logo{font-family:'Playfair Display',serif;font-size:20px;letter-spacing:-0.3px;}
 .logo em{color:var(--accent);font-style:normal;}
 .live-chip{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:var(--green-glow);border:1px solid rgba(52,211,153,0.18);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);}
 .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite;}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(52,211,153,.4);}50%{opacity:.7;box-shadow:0 0 0 4px rgba(52,211,153,0);}}
+/* PAGES */
 .page{display:none;padding-bottom:90px;position:relative;z-index:1;}
 .page.active{display:block;}
+/* PANEL */
 .panel{position:fixed;top:0;height:100dvh;width:100%;max-width:480px;left:50%;transform:translateX(calc(-50% + 480px));background:var(--bg);z-index:300;overflow-y:auto;transition:transform .35s cubic-bezier(.4,0,.2,1);}
 @media(max-width:480px){.panel{left:0;transform:translateX(100%);}.panel.open{transform:translateX(0);}}
 .panel.open{transform:translateX(-50%);}
+/* BRIEF HERO */
 .brief-hero{padding:28px 20px 22px;border-bottom:1px solid var(--border);position:relative;}
 .brief-hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.25;}
 .eyebrow{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
@@ -40,12 +44,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .spin-icon{display:inline-block;}
 .refresh-btn.spinning .spin-icon{animation:spin .65s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+/* STORY LIST */
 .story-list{padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
+/* STORY CARD */
 .story-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;backdrop-filter:blur(14px);animation:fadeUp .4s ease both;position:relative;transition:border-color .25s,transform .25s,box-shadow .25s;}
 .story-card:hover{border-color:var(--border-glow);transform:translateY(-2px);box-shadow:0 10px 36px rgba(0,0,0,.45);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 .card-image{width:100%;height:180px;object-fit:cover;display:block;}
-.card-image-placeholder{width:100%;height:140px;background:linear-gradient(135deg,var(--surface) 0%,var(--surface2) 100%);display:flex;align-items:center;justify-content:center;font-size:36px;}
+.card-image-placeholder{width:100%;height:130px;background:linear-gradient(135deg,var(--surface) 0%,var(--surface2) 100%);display:flex;align-items:center;justify-content:center;font-size:36px;}
 .card-body{padding:16px;}
 .card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .top-story-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:20px;background:var(--green-glow);border:1px solid rgba(52,211,153,0.25);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);}
@@ -54,7 +60,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .topic-tag{font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
 .topic-tag::before{content:'';width:14px;height:1px;background:var(--accent);opacity:.45;}
 .headline{font-family:'Playfair Display',serif;font-size:17px;line-height:1.35;margin-bottom:12px;}
-.bullets{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:14px;min-height:auto;}
+.bullets{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
 .bullets li{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.55;color:var(--text2);}
 .bullets li::before{content:'·';color:var(--accent);flex-shrink:0;}
 .bullet-loading{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);font-style:italic;}
@@ -68,13 +74,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .cred-unknown{background:var(--surface2);border:1px solid var(--border);color:var(--text3);}
 .read-story-btn{display:block;width:100%;padding:10px;border-radius:9px;background:linear-gradient(135deg,var(--accent-glow),rgba(167,139,250,0.08));border:1px solid var(--border-glow);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;}
 .read-story-btn:hover{background:rgba(100,180,255,.18);}
+/* STATES */
 .state-loading{padding:52px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--text2);font-size:13px;}
 .big-spin{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite;}
 .state-empty{padding:52px 20px;text-align:center;color:var(--text2);font-size:14px;}
 .state-empty small{display:block;margin-top:6px;font-size:12px;color:var(--text3);}
+/* PAGE HEADER */
 .page-header{padding:28px 20px 20px;border-bottom:1px solid var(--border);}
 .page-header h1{font-family:'Playfair Display',serif;font-size:27px;margin-bottom:4px;}
 .page-header p{font-size:13px;color:var(--text2);}
+/* TOPICS GRID */
 .topics-grid{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .topic-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 16px;cursor:pointer;transition:all .25s;backdrop-filter:blur(14px);animation:fadeUp .3s ease both;position:relative;overflow:hidden;}
 .topic-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform:scaleX(0);transition:transform .3s;transform-origin:left;}
@@ -82,6 +91,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .topic-card:hover::after{transform:scaleX(1);}
 .t-icon{font-size:24px;margin-bottom:10px;}
 .t-name{font-size:13px;font-weight:500;}
+/* PANEL */
 .panel-bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border);background:var(--nav);backdrop-filter:blur(24px);}
 .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);cursor:pointer;font-weight:600;}
 .panel-body{padding:0 0 40px;}
@@ -105,6 +115,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .source-box-name{font-size:14px;font-weight:600;color:var(--text);}
 .read-more{display:block;width:100%;padding:14px;border-radius:10px;background:linear-gradient(135deg,rgba(100,180,255,0.15),rgba(167,139,250,0.1));border:1px solid var(--border-glow);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;margin-bottom:14px;text-align:center;}
 .read-more:hover{background:rgba(100,180,255,.22);}
+/* ASK AI */
 .ask-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
 .ask-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin-bottom:12px;}
 .ask-msgs{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:9px;margin-bottom:12px;}
@@ -116,6 +127,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .ask-input::placeholder{color:var(--text3);}
 .ask-input:focus{border-color:var(--border-glow);}
 .ask-send{padding:10px 14px;border-radius:8px;background:var(--accent);border:none;color:#000;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+/* SEARCH */
 .search-wrap{padding:20px;}
 .search-row{display:flex;gap:10px;margin-bottom:6px;}
 .search-inp{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;}
@@ -124,6 +136,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .search-go{background:var(--accent);border:none;border-radius:10px;padding:13px 18px;color:#000;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .search-hint{font-size:11px;color:var(--text3);margin-bottom:20px;}
 .search-results{display:flex;flex-direction:column;gap:12px;}
+/* SETTINGS */
 .settings-wrap{padding:20px;display:flex;flex-direction:column;gap:14px;}
 .set-group{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;backdrop-filter:blur(14px);}
 .set-group-label{padding:12px 16px 6px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);}
@@ -138,18 +151,46 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .range-row{padding:10px 16px 16px;border-top:1px solid var(--border);}
 input[type=range]{width:100%;accent-color:var(--accent);}
 .time-inp{background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--accent);outline:none;cursor:pointer;}
+/* FOLLOW TOPICS */
+.follow-topic-row{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-top:1px solid var(--border);gap:8px;}
+.ftopic-name{font-size:13px;color:var(--text);flex:1;}
+/* NOTIF TOPIC ROWS */
 .notif-topic-row{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-top:1px solid var(--border);gap:8px;}
 .ntopic-name{font-size:13px;color:var(--text);flex:1;}
 .npills{display:flex;gap:7px;}
 .npill{padding:4px 9px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--text3);background:transparent;transition:all .2s;font-family:'DM Sans',sans-serif;}
 .npill.breaking.on{background:rgba(248,113,113,.14);border-color:var(--red);color:var(--red);}
 .npill.normal.on{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+/* KEYWORD INPUT */
+.keyword-input-row{padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.keyword-inp{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;}
+.keyword-inp::placeholder{color:var(--text3);}
+.keyword-inp:focus{border-color:var(--border-glow);}
+.keyword-add{padding:9px 14px;border-radius:8px;background:var(--accent);border:none;color:#000;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+.keyword-tags{padding:8px 16px 12px;display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--border);}
+.keyword-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:var(--accent-glow);border:1px solid var(--border-glow);font-size:11px;color:var(--accent);}
+.keyword-tag button{background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;padding:0;line-height:1;}
+/* NOTIFICATIONS PAGE */
+.notif-list{padding:16px 20px;display:flex;flex-direction:column;gap:10px;}
+.notif-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s;animation:fadeUp .3s ease both;}
+.notif-item:hover{border-color:var(--border-glow);}
+.notif-item.unread{border-left:3px solid var(--accent);}
+.notif-item-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.notif-item-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);}
+.notif-item-time{font-size:11px;color:var(--text3);}
+.notif-item-title{font-size:13px;font-weight:500;color:var(--text);line-height:1.4;}
+.notif-item-source{font-size:11px;color:var(--text3);margin-top:4px;}
+.notif-clear-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin:0 20px 4px;}
+/* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--nav);backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom);}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 0 13px;cursor:pointer;color:var(--text3);transition:color .2s;position:relative;}
 .nav-item.active{color:var(--accent);}
 .nav-item.active::before{content:'';position:absolute;top:0;left:18%;right:18%;height:1px;background:var(--accent);box-shadow:0 0 8px var(--accent);}
 .nav-icon{font-size:19px;}
 .nav-label{font-size:10px;font-weight:500;letter-spacing:.04em;}
+.nav-badge{position:absolute;top:8px;right:calc(50% - 14px);background:var(--red);color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;display:none;}
+.nav-badge.show{display:flex;}
+/* BANNER */
 .banner{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-140px);width:calc(100% - 40px);max-width:440px;background:var(--card);border:1px solid var(--border-glow);border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;backdrop-filter:blur(22px);z-index:500;transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 10px 40px rgba(0,0,0,.6);}
 .banner.show{transform:translateX(-50%) translateY(0);}
 .b-icon{font-size:21px;flex-shrink:0;}
@@ -211,14 +252,26 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
 
 <!-- SEARCH -->
 <div class="page" id="page-search">
-  <div class="page-header"><h1>Search</h1><p>Search any story across all sources.</p></div>
+  <div class="page-header"><h1>Search</h1><p>Search all sources · results within last month · newest first</p></div>
   <div class="search-wrap">
     <div class="search-row">
       <input class="search-inp" id="search-q" placeholder="Search any topic or story…" onkeydown="if(event.key==='Enter')doSearch()">
       <button class="search-go" onclick="doSearch()">Search</button>
     </div>
-    <div class="search-hint">Searches all topics · results within last month · newest first</div>
+    <div class="search-hint">AI expands your search with synonyms across all sources</div>
     <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS PAGE -->
+<div class="page" id="page-notifications">
+  <div class="page-header">
+    <h1>Notifications</h1>
+    <p>Stories you've been alerted about</p>
+  </div>
+  <button class="notif-clear-btn" onclick="clearNotifHistory()">Clear all</button>
+  <div class="notif-list" id="notif-list">
+    <div class="state-empty">No notifications yet<small>Enable notifications in Settings to get alerts.</small></div>
   </div>
 </div>
 
@@ -226,10 +279,12 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
 <div class="page" id="page-settings">
   <div class="page-header"><h1>Settings</h1></div>
   <div class="settings-wrap">
+
+    <!-- Notifications -->
     <div class="set-group">
       <div class="set-group-label">Notifications</div>
       <div class="set-row">
-        <div><div class="set-row-label">Enable Notifications</div><div class="set-row-sub">Requires browser permission</div></div>
+        <div><div class="set-row-label">Enable Notifications</div><div class="set-row-sub">Get alerts even when app is closed</div></div>
         <div class="toggle" id="toggle-notif" onclick="toggleNotif()"></div>
       </div>
       <div class="set-row">
@@ -237,11 +292,33 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
         <input class="time-inp" type="time" id="brief-time-inp" value="07:00" onchange="saveBriefTime()">
       </div>
     </div>
+
+    <!-- Follow Topics -->
     <div class="set-group">
-      <div class="set-group-label">Topic Notifications</div>
+      <div class="set-group-label">Follow Topics</div>
+      <div style="padding:9px 16px 5px;font-size:11px;color:var(--text3);">Get notified when new stories arrive in followed topics</div>
+      <div id="follow-topic-rows"></div>
+    </div>
+
+    <!-- Topic Notification Types -->
+    <div class="set-group">
+      <div class="set-group-label">Notification Type per Topic</div>
       <div style="padding:9px 16px 5px;font-size:11px;color:var(--text3);">Breaking = instant · Normal = batched</div>
       <div id="notif-topic-rows"></div>
     </div>
+
+    <!-- Follow Keywords -->
+    <div class="set-group">
+      <div class="set-group-label">Follow Keywords</div>
+      <div style="padding:9px 16px 5px;font-size:11px;color:var(--text3);">Get notified when any story mentions these words</div>
+      <div class="keyword-input-row">
+        <input class="keyword-inp" id="keyword-inp" placeholder="e.g. RBA, Gaza, Elon Musk…" onkeydown="if(event.key==='Enter')addKeyword()">
+        <button class="keyword-add" onclick="addKeyword()">Add</button>
+      </div>
+      <div class="keyword-tags" id="keyword-tags"></div>
+    </div>
+
+    <!-- Feed -->
     <div class="set-group">
       <div class="set-group-label">Feed</div>
       <div class="set-row">
@@ -261,12 +338,15 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
           oninput="topicCount=+this.value;document.getElementById('topic-count-val').textContent=this.value;localStorage.setItem('topicCount',this.value);Object.keys(cache).forEach(k=>delete cache[k]);">
       </div>
     </div>
+
+    <!-- About -->
     <div class="set-group">
       <div class="set-group-label">About</div>
-      <div class="set-row"><span class="set-row-label">Version</span><span class="set-row-val">2.0.0</span></div>
-      <div class="set-row"><span class="set-row-label">Sources</span><span class="set-row-val">BBC · Guardian · Sky · Reuters · AP</span></div>
-      <div class="set-row"><span class="set-row-label">AI</span><span class="set-row-val">Gemini 1.5 Flash</span></div>
+      <div class="set-row"><span class="set-row-label">Version</span><span class="set-row-val">3.0.0</span></div>
+      <div class="set-row"><span class="set-row-label">Sources</span><span class="set-row-val">BBC · Guardian · Reuters · ABC · Sky · AP</span></div>
+      <div class="set-row"><span class="set-row-label">AI</span><span class="set-row-val">Cloudflare Workers AI</span></div>
     </div>
+
   </div>
 </div>
 
@@ -317,138 +397,107 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
   <div class="nav-item active" id="nav-brief" onclick="showPage('brief')"><div class="nav-icon">📰</div><div class="nav-label">Brief</div></div>
   <div class="nav-item" id="nav-topics" onclick="showPage('topics')"><div class="nav-icon">🗂</div><div class="nav-label">Topics</div></div>
   <div class="nav-item" id="nav-search" onclick="showPage('search')"><div class="nav-icon">🔍</div><div class="nav-label">Search</div></div>
+  <div class="nav-item" id="nav-notifications" onclick="showPage('notifications')">
+    <div class="nav-icon">🔔</div><div class="nav-label">Alerts</div>
+    <div class="nav-badge" id="notif-badge">0</div>
+  </div>
   <div class="nav-item" id="nav-settings" onclick="showPage('settings')"><div class="nav-icon">⚙️</div><div class="nav-label">Settings</div></div>
 </div>
 
 <script>
 const WORKER = 'https://xnews-worker.xbondin.workers.dev';
+const VAPID_PUBLIC = 'BFN9IuPvPH2pTe1YefhJEPCjbHvntjZCX7gfwfpKeC5i1Nob9O14vOxlwFZZQr-ajWEbzO0QTWcYN1IfVH6B2KM';
 
 let briefCount=12, topicCount=8;
 let notifEnabled=false, briefTime='07:00';
-let notifSettings={}, currentStory=null, askHistory=[];
+let notifSettings={}, followedTopics=new Set(), keywords=[];
+let currentStory=null, askHistory=[];
 let briefTimer=null, lastBreaking=Date.now()-30*60000;
+let pushSubId=null, pushSub=null;
 const cache={};
+const storyAICache={};
+let notifHistory=[];
+let unreadNotifs=0;
 
 const TOPICS=[
-  {id:'australian-news',name:'Australian News',icon:'🦘'},
-  {id:'world-news',name:'World News',icon:'🌏'},
-  {id:'business',name:'Business & Markets',icon:'📈'},
-  {id:'technology',name:'Technology',icon:'💻'},
-  {id:'ai',name:'AI',icon:'🤖'},
-  {id:'crypto',name:'Crypto',icon:'₿'},
-  {id:'science',name:'Science & Innovation',icon:'🔬'},
-  {id:'health',name:'Health & Wellness',icon:'🏥'},
-  {id:'australian-sports',name:'Australian Sports',icon:'🏉'},
-  {id:'sports',name:'Sports',icon:'⚽'},
+  {id:'australian-news',  name:'Australian News',      icon:'🦘'},
+  {id:'world-news',       name:'World News',           icon:'🌏'},
+  {id:'business',         name:'Business & Markets',   icon:'📈'},
+  {id:'technology',       name:'Technology',           icon:'💻'},
+  {id:'ai',               name:'AI',                   icon:'🤖'},
+  {id:'crypto',           name:'Crypto',               icon:'₿'},
+  {id:'science',          name:'Science & Innovation', icon:'🔬'},
+  {id:'health',           name:'Health & Wellness',    icon:'🏥'},
+  {id:'australian-sports',name:'Australian Sports',    icon:'🏉'},
+  {id:'sports',           name:'World Sports',         icon:'⚽'},
 ];
 
 function timeAgo(d){
   if(!d)return'';
   const s=(Date.now()-new Date(d))/1000;
-  if(s<60)return'just now';
-  if(s<3600)return`${Math.floor(s/60)}m ago`;
-  if(s<86400)return`${Math.floor(s/3600)}h ago`;
-  return`${Math.floor(s/86400)}d ago`;
+  if(s<60)return'just now';if(s<3600)return`${Math.floor(s/60)}m ago`;
+  if(s<86400)return`${Math.floor(s/3600)}h ago`;return`${Math.floor(s/86400)}d ago`;
 }
-
-function credClass(label){
-  if(label==='High')return'cred-high';
-  if(label==='Medium')return'cred-medium';
-  if(label==='Low')return'cred-low';
-  return'cred-unknown';
-}
-
-function credHTML(cred){
-  if(!cred)return'';
-  return`<span class="cred-badge ${credClass(cred.label)}">🛡 ${cred.label}</span>`;
-}
-
-function highlight(text,query){
-  if(!query||!text)return text;
-  const esc=query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function credClass(l){return l==='High'?'cred-high':l==='Medium'?'cred-medium':l==='Low'?'cred-low':'cred-unknown';}
+function credHTML(c){if(!c)return'';return`<span class="cred-badge ${credClass(c.label)}">🛡 ${c.label}</span>`;}
+function highlight(text,q){
+  if(!q||!text)return text;
+  const esc=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   return text.replace(new RegExp(`(${esc})`,'gi'),'<mark>$1</mark>');
 }
 
 // ── FETCH ──
 async function fetchNews(topic,limit){
   limit=limit||topicCount;
-  // Only use cache if it has enough stories AND is fresh
   if(cache[topic]&&cache[topic].ts>Date.now()-5*60000&&cache[topic].stories.length>=limit)
     return cache[topic].stories.slice(0,limit);
   try{
     const res=await fetch(`${WORKER}/news?topic=${topic}&limit=${limit}`);
     const data=await res.json();
     if(data.ok&&data.stories.length){
-      // Always store the full result so cache grows
       if(!cache[topic]||data.stories.length>=(cache[topic].stories||[]).length)
         cache[topic]={stories:data.stories,ts:Date.now()};
       return data.stories.slice(0,limit);
     }
-  }catch(e){console.error('fetchNews error:',e);}
+  }catch(e){console.error('fetchNews:',e);}
   return[];
 }
 
 async function searchNews(q,limit){
   try{
-    const res=await fetch(`${WORKER}/search?q=${encodeURIComponent(q)}&limit=${limit||15}`);
+    const res=await fetch(`${WORKER}/search?q=${encodeURIComponent(q)}&limit=${limit||20}`);
     const data=await res.json();
     return data.ok?data.stories:[];
   }catch(e){return[];}
 }
 
-// ── AI via Worker ──
-async function workerPOST(path, body) {
-  try {
-    const res = await fetch(`${WORKER}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+// ── AI ──
+async function workerPOST(path,body){
+  try{
+    const res=await fetch(`${WORKER}${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     return await res.json();
-  } catch(e) {
-    console.error('workerPOST error:', path, e);
-    return { ok: false, error: e.message };
-  }
+  }catch(e){console.error('workerPOST:',path,e);return{ok:false,error:e.message};}
 }
 
-// Story AI cache — avoid re-calling for same story
-const storyAICache = {};
-
-async function getStoryAI(story) {
-  const key = story.title;
-  if (storyAICache[key]) return storyAICache[key];
-  const data = await workerPOST('/ai/story', {
-    title: story.title,
-    desc: story.desc || story.title || '',
-  });
-  if (data.ok) {
-    storyAICache[key] = { bullets: data.bullets || [], summary: data.summary || '' };
-  } else {
-    storyAICache[key] = { bullets: [], summary: '' };
+async function getStoryAI(story){
+  const key=story.title;
+  if(storyAICache[key]&&(storyAICache[key].bullets.length>0||storyAICache[key].summary))
+    return storyAICache[key];
+  const data=await workerPOST('/ai/story',{title:story.title,desc:story.desc||story.title||''});
+  if(data.ok&&(data.bullets?.length>0||data.summary)){
+    storyAICache[key]={bullets:data.bullets||[],summary:data.summary||''};
+  }else{
+    return{bullets:[],summary:''};
   }
   return storyAICache[key];
 }
 
-async function getBullets(story) {
-  const ai = await getStoryAI(story);
-  return ai.bullets;
-}
+async function getBullets(story){const ai=await getStoryAI(story);return ai.bullets;}
+async function getSummary(story){const ai=await getStoryAI(story);return ai.summary;}
 
-async function getSummary(story) {
-  const ai = await getStoryAI(story);
-  return ai.summary;
-}
-
-async function askGemini(q, story, history) {
-  const data = await workerPOST('/ai/ask', {
-    title: story.title,
-    desc: story.desc || '',
-    source: story.source || '',
-    topic: story.topic || '',
-    question: q,
-    history,
-  });
-  return data.ok ? data.text : null;
+async function askGemini(q,story,history){
+  const data=await workerPOST('/ai/ask',{title:story.title,desc:story.desc||'',source:story.source||'',topic:story.topic||'',question:q,history});
+  return data.ok?data.text:null;
 }
 
 // ── CARD ──
@@ -457,29 +506,23 @@ function makeCard(story,topicName,idx,isTop,searchQuery){
   const topic=TOPICS.find(t=>t.name===topicName);
   const icon=topic?topic.icon:'📰';
   const cred=story.credibility||{label:'Unknown'};
-  const cls=credClass(cred.label);
   const titleHTML=searchQuery?highlight(story.title,searchQuery):story.title;
+  const rawDesc=story.desc?story.desc.slice(0,160)+(story.desc.length>160?'…':''):'';
+  const descHTML=searchQuery&&rawDesc?`<div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5;">${highlight(rawDesc,searchQuery)}</div>`:'';
 
   const div=document.createElement('div');
   div.className='story-card';
   div.style.animationDelay=Math.min(idx*.07,.6)+'s';
-  div.dataset.id=id;
-  div.dataset.title=story.title||'';
-  div.dataset.desc=story.desc||'';
-  div.dataset.url=story.url||story.link||'#';
-  div.dataset.src=story.source||'';
-  div.dataset.pub=story.pubDate||'';
-  div.dataset.topic=topicName||'';
-  div.dataset.image=story.image||'';
-  div.dataset.author=story.author||'';
-  div.dataset.credLabel=cred.label;
-  div.dataset.credScore=cred.score||0;
+  div.dataset.id=id;div.dataset.title=story.title||'';div.dataset.desc=story.desc||'';
+  div.dataset.url=story.url||story.link||'#';div.dataset.src=story.source||'';
+  div.dataset.pub=story.pubDate||'';div.dataset.topic=topicName||'';
+  div.dataset.image=story.image||'';div.dataset.author=story.author||'';
+  div.dataset.credLabel=cred.label;div.dataset.credScore=cred.score||0;
 
   const imageHTML=story.image
     ?`<img class="card-image" src="${story.image}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-image-placeholder>${icon}</div>'">`
     :`<div class="card-image-placeholder">${icon}</div>`;
 
-  const descHTML=searchQuery&&story.desc?`<div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5;">${highlight(story.desc.slice(0,150)+(story.desc.length>150?'…':''),searchQuery)}</div>`:'';
   div.innerHTML=`
     ${imageHTML}
     <div class="card-body">
@@ -495,7 +538,7 @@ function makeCard(story,topicName,idx,isTop,searchQuery){
       </ul>
       <div class="card-footer">
         <span class="source-name">${story.source||'News'}</span>
-        <span class="cred-badge ${cls}">🛡 ${cred.label}</span>
+        <span class="cred-badge ${credClass(cred.label)}">🛡 ${cred.label}</span>
       </div>
       <button class="read-story-btn" onclick="openStory(event,'${id}')">Read full story →</button>
     </div>`;
@@ -508,17 +551,11 @@ async function loadBullets(id,story){
   const el=document.getElementById('bl-'+id);
   if(!el)return;
   if(ai.bullets&&ai.bullets.length>=1){
-    // Always show all 3 bullet points
     el.innerHTML=ai.bullets.map(b=>`<li>${b}</li>`).join('');
-  } else {
-    // Fallback: generate 3 points from desc
+  }else{
     const desc=story.desc||story.title||'';
-    const sentences=(desc.match(/[^.!?]+[.!?]+/g)||[desc]).slice(0,3).map(s=>s.trim()).filter(Boolean);
-    if(sentences.length){
-      el.innerHTML=sentences.map(p=>`<li>${p}</li>`).join('');
-    } else {
-      el.innerHTML=`<li>${desc.slice(0,100)}</li>`;
-    }
+    const sentences=(desc.match(/[^.!?]{10,}[.!?]/g)||[desc]).map(s=>s.trim()).filter(Boolean).slice(0,3);
+    el.innerHTML=sentences.length?sentences.map(p=>`<li>${p}</li>`).join(''):`<li>${desc.slice(0,120)}${desc.length>120?'…':''}</li>`;
   }
 }
 
@@ -527,19 +564,11 @@ function openStory(e,id){
   e.stopPropagation();
   const card=document.querySelector(`[data-id="${id}"]`);
   if(!card)return;
-  currentStory={
-    title:card.dataset.title,desc:card.dataset.desc,
-    url:card.dataset.url,source:card.dataset.src,
-    pubDate:card.dataset.pub,topic:card.dataset.topic,
-    image:card.dataset.image,author:card.dataset.author,
-    credibility:{label:card.dataset.credLabel,score:+card.dataset.credScore}
-  };
+  currentStory={title:card.dataset.title,desc:card.dataset.desc,url:card.dataset.url,source:card.dataset.src,pubDate:card.dataset.pub,topic:card.dataset.topic,image:card.dataset.image,author:card.dataset.author,credibility:{label:card.dataset.credLabel,score:+card.dataset.credScore}};
   askHistory=[];
   const topic=TOPICS.find(t=>t.name===currentStory.topic);
   const icon=topic?topic.icon:'📰';
-  document.getElementById('p-image-wrap').innerHTML=currentStory.image
-    ?`<img class="panel-image" src="${currentStory.image}" alt="" onerror="this.style.display='none'">`
-    :`<div class="panel-image-placeholder">${icon}</div>`;
+  document.getElementById('p-image-wrap').innerHTML=currentStory.image?`<img class="panel-image" src="${currentStory.image}" alt="" onerror="this.style.display='none'">`:`<div class="panel-image-placeholder">${icon}</div>`;
   document.getElementById('p-tag').textContent=currentStory.topic||currentStory.source;
   document.getElementById('p-headline').textContent=currentStory.title;
   document.getElementById('p-byline').textContent=currentStory.author?`By ${currentStory.author}`:'';
@@ -561,20 +590,12 @@ function openStory(e,id){
 async function loadPanel(){
   const ai=await getStoryAI(currentStory);
   const be=document.getElementById('p-bullets');
-  if(be){
-    if(ai.bullets&&ai.bullets.length)
-      be.innerHTML=ai.bullets.map(b=>`<li>${b}</li>`).join('');
-    else
-      be.innerHTML=`<li>${currentStory.desc?currentStory.desc.slice(0,100)+'…':'No key points available.'}</li>`;
-  }
+  if(be)be.innerHTML=ai.bullets?.length?ai.bullets.map(b=>`<li>${b}</li>`).join(''):`<li>${currentStory.desc||'No key points.'}</li>`;
   const se=document.getElementById('p-summary');
   if(se)se.textContent=ai.summary||currentStory.desc||'No summary available.';
 }
 
-function closePanel(){
-  document.getElementById('story-panel').classList.remove('open');
-  document.body.style.overflow='';
-}
+function closePanel(){document.getElementById('story-panel').classList.remove('open');document.body.style.overflow='';}
 
 async function sendAsk(){
   const inp=document.getElementById('ask-inp');
@@ -587,15 +608,7 @@ async function sendAsk(){
   askHistory.push({r:'u',t:q});
   const ans=await askGemini(q,currentStory,askHistory);
   const t=document.getElementById('ai-typing');
-  if(t){
-    if(ans){
-      t.textContent=ans;
-    } else {
-      t.textContent='Unable to get a response right now. Please try again in a moment.';
-      t.style.color='var(--text3)';
-      t.style.fontStyle='italic';
-    }
-  }
+  if(t){t.textContent=ans||'Unable to get a response right now. Please try again.';if(!ans)t.style.color='var(--text3)';}
   if(ans)askHistory.push({r:'a',t:ans});
   msgs.scrollTop=msgs.scrollHeight;
 }
@@ -608,8 +621,7 @@ async function loadBrief(){
   btn.classList.add('spinning');
   list.innerHTML='<div class="state-loading"><div class="big-spin"></div><span>Fetching headlines…</span></div>';
   const storiesPerTopicForBrief=Math.ceil(briefCount/TOPICS.length)+1;
-  const all=[];
-  const seen=new Set();
+  const all=[];const seen=new Set();
   const results=await Promise.allSettled(TOPICS.map(t=>fetchNews(t.id,storiesPerTopicForBrief)));
   results.forEach((r,i)=>{
     if(r.status==='fulfilled')r.value.forEach(s=>{
@@ -630,21 +642,16 @@ async function loadBrief(){
 
 // ── TOPICS ──
 function renderTopics(){
-  const g=document.getElementById('topics-grid');
-  g.innerHTML='';
+  const g=document.getElementById('topics-grid');g.innerHTML='';
   TOPICS.forEach((t,i)=>{
-    const d=document.createElement('div');
-    d.className='topic-card';
-    d.style.animationDelay=Math.min(i*.05,.4)+'s';
+    const d=document.createElement('div');d.className='topic-card';d.style.animationDelay=Math.min(i*.05,.4)+'s';
     d.innerHTML=`<div class="t-icon">${t.icon}</div><div class="t-name">${t.name}</div>`;
-    d.onclick=()=>openTopic(t.id);
-    g.appendChild(d);
+    d.onclick=()=>openTopic(t.id);g.appendChild(d);
   });
 }
 
 async function openTopic(id){
-  const topic=TOPICS.find(t=>t.id===id);
-  if(!topic)return;
+  const topic=TOPICS.find(t=>t.id===id);if(!topic)return;
   document.getElementById('td-title').textContent=topic.name;
   document.getElementById('td-count').textContent='Loading…';
   document.getElementById('td-list').innerHTML='<div class="state-loading"><div class="big-spin"></div><span>Fetching stories…</span></div>';
@@ -661,33 +668,163 @@ async function openTopic(id){
 
 // ── SEARCH ──
 async function doSearch(){
-  const q=document.getElementById('search-q').value.trim();
-  if(!q)return;
+  const q=document.getElementById('search-q').value.trim();if(!q)return;
   const results=document.getElementById('search-results');
   results.innerHTML='<div class="state-loading"><div class="big-spin"></div><span>Searching all sources…</span></div>';
-
-  // Worker searches ALL feeds and filters by query
   const stories=await searchNews(q,20);
-
   results.innerHTML='';
-  if(!stories.length){
-    results.innerHTML=`<div class="state-empty">No results found for "<strong>${q}</strong>"<small>Try a different keyword.</small></div>`;
-    return;
-  }
-
-  // Show count
+  if(!stories.length){results.innerHTML=`<div class="state-empty">No results found for "<strong>${q}</strong>"<small>Try different keywords.</small></div>`;return;}
   const countEl=document.createElement('div');
-  countEl.style.cssText='font-size:12px;color:var(--text3);margin-bottom:12px;padding:0 0 4px;';
+  countEl.style.cssText='font-size:12px;color:var(--text3);margin-bottom:12px;';
   countEl.textContent=`${stories.length} result${stories.length===1?'':'s'} for "${q}"`;
   results.appendChild(countEl);
+  stories.forEach((s,i)=>results.appendChild(makeCard(s,s.topicName||s.source||'',i,false,q)));
+}
 
-  stories.forEach((s,i)=>{
-    const topicName=s.topicName||s.source||'';
-    results.appendChild(makeCard(s,topicName,i,false,q));
+// ── NOTIFICATIONS HISTORY ──
+function saveNotifHistory(){localStorage.setItem('notifHistory',JSON.stringify(notifHistory));}
+function loadNotifHistory(){
+  try{notifHistory=JSON.parse(localStorage.getItem('notifHistory')||'[]');}catch(e){notifHistory=[];}
+}
+
+function addToNotifHistory(title,body,url,topicName){
+  const item={id:Date.now(),title,body,url:url||'/',topicName:topicName||'',time:new Date().toISOString(),read:false};
+  notifHistory.unshift(item);
+  if(notifHistory.length>100)notifHistory=notifHistory.slice(0,100);
+  saveNotifHistory();
+  updateNotifBadge();
+  renderNotifHistory();
+}
+
+function renderNotifHistory(){
+  const list=document.getElementById('notif-list');
+  if(!notifHistory.length){
+    list.innerHTML='<div class="state-empty">No notifications yet<small>Enable notifications in Settings to get alerts.</small></div>';
+    return;
+  }
+  list.innerHTML='';
+  notifHistory.forEach((item,i)=>{
+    const div=document.createElement('div');
+    div.className=`notif-item${item.read?'':' unread'}`;
+    div.style.animationDelay=Math.min(i*.05,.4)+'s';
+    div.innerHTML=`
+      <div class="notif-item-top">
+        <span class="notif-item-label">${item.topicName||'X/News'}</span>
+        <span class="notif-item-time">${timeAgo(item.time)}</span>
+      </div>
+      <div class="notif-item-title">${item.body||item.title}</div>
+      <div class="notif-item-source">${item.title}</div>`;
+    div.onclick=()=>{
+      item.read=true;saveNotifHistory();updateNotifBadge();
+      if(item.url&&item.url!=='/')window.open(item.url,'_blank');
+    };
+    list.appendChild(div);
   });
 }
 
-// ── NOTIFICATIONS ──
+function clearNotifHistory(){
+  notifHistory=[];saveNotifHistory();
+  unreadNotifs=0;updateNotifBadge();renderNotifHistory();
+}
+
+function updateNotifBadge(){
+  unreadNotifs=notifHistory.filter(n=>!n.read).length;
+  const badge=document.getElementById('notif-badge');
+  if(unreadNotifs>0){badge.textContent=unreadNotifs>9?'9+':unreadNotifs;badge.classList.add('show');}
+  else{badge.classList.remove('show');}
+}
+
+// ── PUSH NOTIFICATIONS ──
+async function registerServiceWorker(){
+  if(!('serviceWorker' in navigator))return null;
+  try{
+    const reg=await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    return reg;
+  }catch(e){console.error('SW register failed:',e);return null;}
+}
+
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const rawData=window.atob(base64);
+  return Uint8Array.from([...rawData].map(c=>c.charCodeAt(0)));
+}
+
+async function subscribeToPush(){
+  const reg=await registerServiceWorker();
+  if(!reg)return null;
+  try{
+    const sub=await reg.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC),
+    });
+    return sub;
+  }catch(e){console.error('Push subscribe failed:',e);return null;}
+}
+
+async function savePushSub(sub){
+  const settings={
+    notifSettings,
+    followedTopics:[...followedTopics],
+    keywords,
+    briefTime,
+    notifEnabled,
+  };
+  const data=await workerPOST('/push/subscribe',{subscription:sub.toJSON(),settings});
+  if(data.ok){pushSubId=data.id;localStorage.setItem('pushSubId',pushSubId);}
+  return data;
+}
+
+async function updatePushSettings(){
+  if(!pushSubId)return;
+  const settings={notifSettings,followedTopics:[...followedTopics],keywords,briefTime,notifEnabled};
+  await workerPOST('/push/update-settings',{id:pushSubId,settings});
+}
+
+// ── FOLLOW TOPICS SETTINGS ──
+function renderFollowTopics(){
+  const c=document.getElementById('follow-topic-rows');c.innerHTML='';
+  TOPICS.forEach(t=>{
+    const followed=followedTopics.has(t.id);
+    const row=document.createElement('div');row.className='follow-topic-row';
+    row.innerHTML=`<div class="ftopic-name">${t.icon} ${t.name}</div>
+      <div class="toggle ${followed?'on':''}" data-id="${t.id}" onclick="toggleFollowTopic(this)"></div>`;
+    c.appendChild(row);
+  });
+}
+
+function toggleFollowTopic(el){
+  const id=el.dataset.id;
+  if(followedTopics.has(id))followedTopics.delete(id);else followedTopics.add(id);
+  el.classList.toggle('on');
+  localStorage.setItem('followedTopics',JSON.stringify([...followedTopics]));
+  updatePushSettings();
+}
+
+// ── KEYWORD FOLLOW ──
+function renderKeywordTags(){
+  const c=document.getElementById('keyword-tags');
+  if(!keywords.length){c.innerHTML='<span style="font-size:12px;color:var(--text3);">No keywords yet</span>';return;}
+  c.innerHTML=keywords.map((kw,i)=>`<span class="keyword-tag">${kw}<button onclick="removeKeyword(${i})">✕</button></span>`).join('');
+}
+
+function addKeyword(){
+  const inp=document.getElementById('keyword-inp');
+  const kw=inp.value.trim();
+  if(!kw||keywords.includes(kw))return;
+  keywords.push(kw);inp.value='';
+  localStorage.setItem('keywords',JSON.stringify(keywords));
+  renderKeywordTags();updatePushSettings();
+}
+
+function removeKeyword(i){
+  keywords.splice(i,1);
+  localStorage.setItem('keywords',JSON.stringify(keywords));
+  renderKeywordTags();updatePushSettings();
+}
+
+// ── NOTIF TOPIC TYPES ──
 function renderNotifTopics(){
   const c=document.getElementById('notif-topic-rows');c.innerHTML='';
   TOPICS.forEach(t=>{
@@ -708,8 +845,10 @@ function toggleNpill(btn){
   notifSettings[id][type]=!notifSettings[id][type];
   btn.classList.toggle('on');
   localStorage.setItem('notifSettings',JSON.stringify(notifSettings));
+  updatePushSettings();
 }
 
+// ── NOTIFICATIONS TOGGLE ──
 async function toggleNotif(){
   const el=document.getElementById('toggle-notif');
   if(!notifEnabled){
@@ -717,19 +856,33 @@ async function toggleNotif(){
     const p=await Notification.requestPermission();
     if(p!=='granted'){showBanner('⚠️ Denied','Allow notifications in browser settings.');return;}
     notifEnabled=true;el.classList.add('on');localStorage.setItem('notifEnabled','true');
+    // Register service worker and subscribe to push
+    pushSub=await subscribeToPush();
+    if(pushSub){
+      await savePushSub(pushSub);
+      showBanner('🔔 Notifications on','You\'ll get alerts even when the app is closed.');
+    }else{
+      showBanner('🔔 In-app notifications on','Background notifications require HTTPS hosting.');
+    }
     scheduleBrief();
-    setTimeout(()=>pushNotif('✅ X/News','Notifications are working!'),500);
-    showBanner('🔔 Notifications on','You\'ll receive breaking news and your daily brief.');
+    setTimeout(()=>{
+      addToNotifHistory('✅ X/News','Notifications are working! You\'ll be alerted when stories break.','/',null);
+      pushNotif('✅ X/News','Notifications are working!');
+    },800);
   }else{
     notifEnabled=false;el.classList.remove('on');localStorage.setItem('notifEnabled','false');
     if(briefTimer){clearInterval(briefTimer);briefTimer=null;}
     showBanner('🔕 Notifications off','Alerts are now off.');
+    updatePushSettings();
   }
 }
 
-function pushNotif(title,body,tag){
-  if(notifEnabled&&Notification.permission==='granted')
-    new Notification(title,{body,icon:'/favicon.ico',tag:tag||title,renotify:!!tag});
+function pushNotif(title,body,url,topicName,tag){
+  if(notifEnabled&&Notification.permission==='granted'){
+    const n=new Notification(title,{body,icon:'/favicon.ico',tag:tag||title,renotify:!!tag,data:{url:url||'/'}});
+    n.onclick=()=>{window.focus();if(url&&url!=='/')window.open(url,'_blank');};
+  }
+  addToNotifHistory(title,body,url,topicName);
   showBanner(title,body);
 }
 
@@ -738,28 +891,35 @@ function checkBreaking(stories){
   stories.filter(s=>new Date(s.pubDate)>lastBreaking).forEach(s=>{
     const t=TOPICS.find(t=>t.name===s.topicName);if(!t)return;
     const ns=notifSettings[t.id]||{};
-    const tag=s.url||s.title;
-    if(ns.breaking)pushNotif(`🔴 Breaking: ${s.topicName}`,s.title,tag);
-    else if(ns.normal)pushNotif(`📰 ${s.topicName}`,s.title,tag);
+    const isFollowed=followedTopics.has(t.id);
+    const kwMatch=keywords.some(kw=>s.title.toLowerCase().includes(kw.toLowerCase())||(s.desc||'').toLowerCase().includes(kw.toLowerCase()));
+    const tag=s.url||s.link||s.title;
+    const url=s.url||s.link||'/';
+    if(ns.breaking||(isFollowed&&ns.breaking)){
+      pushNotif(`🔴 Breaking: ${s.topicName}`,s.title,url,s.topicName,tag);
+    }else if(ns.normal||kwMatch){
+      pushNotif(`📰 ${s.topicName}`,s.title,url,s.topicName,tag);
+    }
   });
   lastBreaking=Date.now();
 }
 
 function scheduleBrief(){
-  if(briefTimer)clearInterval(briefTimer);
-  if(!notifEnabled)return;
+  if(briefTimer)clearInterval(briefTimer);if(!notifEnabled)return;
   briefTimer=setInterval(()=>{
     const n=new Date(),[h,m]=briefTime.split(':').map(Number);
     if(n.getHours()===h&&n.getMinutes()===m)
-      pushNotif('📰 Your Daily Brief',`Good morning! Your ${briefTime} brief is ready.`);
+      pushNotif('📰 Your Daily Brief',`Good morning! Your ${briefTime} brief is ready.`,'/','Daily Brief');
   },60000);
 }
 
+// Check for new stories every 10 min for notifications
 setInterval(async()=>{
   if(!notifEnabled)return;
   for(const t of TOPICS){
     const ns=notifSettings[t.id]||{};
-    if(!ns.breaking&&!ns.normal)continue;
+    const isFollowed=followedTopics.has(t.id);
+    if(!ns.breaking&&!ns.normal&&!isFollowed)continue;
     const stories=await fetchNews(t.id,5);
     checkBreaking(stories.map(s=>({...s,topicName:t.name})));
   }
@@ -768,10 +928,8 @@ setInterval(async()=>{
 // ── BANNER ──
 let bannerTimer;
 function showBanner(title,body){
-  document.getElementById('b-title').textContent=title;
-  document.getElementById('b-body').textContent=body;
-  const b=document.getElementById('banner');
-  b.classList.add('show');clearTimeout(bannerTimer);
+  document.getElementById('b-title').textContent=title;document.getElementById('b-body').textContent=body;
+  const b=document.getElementById('banner');b.classList.add('show');clearTimeout(bannerTimer);
   bannerTimer=setTimeout(()=>b.classList.remove('show'),5000);
 }
 function closeBanner(){document.getElementById('banner').classList.remove('show');}
@@ -781,12 +939,13 @@ function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const pg=document.getElementById('page-'+name);if(pg)pg.classList.add('active');
-  const nav=document.getElementById('nav-'+(name==='topic-detail'?'topics':name));if(nav)nav.classList.add('active');
+  const nav=document.getElementById('nav-'+name);if(nav)nav.classList.add('active');
+  if(name==='notifications'){notifHistory.forEach(n=>n.read=true);saveNotifHistory();updateNotifBadge();}
   window.scrollTo(0,0);
 }
 
 // ── SETTINGS ──
-function saveBriefTime(){briefTime=document.getElementById('brief-time-inp').value;localStorage.setItem('briefTime',briefTime);scheduleBrief();}
+function saveBriefTime(){briefTime=document.getElementById('brief-time-inp').value;localStorage.setItem('briefTime',briefTime);scheduleBrief();updatePushSettings();}
 
 function loadSaved(){
   try{
@@ -799,15 +958,27 @@ function loadSaved(){
     if(bc){briefCount=+bc;document.getElementById('brief-count-slider').value=bc;document.getElementById('brief-count-val').textContent=bc;}
     const tc=localStorage.getItem('topicCount');
     if(tc){topicCount=+tc;document.getElementById('topic-count-slider').value=tc;document.getElementById('topic-count-val').textContent=tc;}
+    const ft=localStorage.getItem('followedTopics');
+    if(ft)followedTopics=new Set(JSON.parse(ft));
+    const kw=localStorage.getItem('keywords');
+    if(kw)keywords=JSON.parse(kw);
+    pushSubId=localStorage.getItem('pushSubId');
+    loadNotifHistory();
   }catch(e){}
 }
 
 // ── INIT ──
 function init(){
   document.getElementById('brief-date').textContent=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
-  loadSaved();renderTopics();renderNotifTopics();
-  if(notifEnabled)scheduleBrief();
+  loadSaved();renderTopics();renderFollowTopics();renderNotifTopics();renderKeywordTags();renderNotifHistory();updateNotifBadge();
+  if(notifEnabled){scheduleBrief();registerServiceWorker();}
   loadBrief();
+  // Listen for service worker messages
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.addEventListener('message',e=>{
+      if(e.data?.type==='CHECK_NEWS')loadBrief();
+    });
+  }
 }
 init();
 </script>
