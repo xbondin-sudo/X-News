@@ -258,15 +258,6 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 .b-body{font-size:12px;color:var(--text2);}
 .b-close{font-size:16px;color:var(--text3);cursor:pointer;padding:0 4px;flex-shrink:0;}
 
-/* ADD TO HOME SCREEN */
-.a2hs-bar{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(120px);width:calc(100% - 40px);max-width:440px;background:var(--card);border:1px solid var(--border-glow);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(22px);z-index:400;transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 10px 40px rgba(0,0,0,.6);}
-.a2hs-bar.show{transform:translateX(-50%) translateY(0);}
-.a2hs-icon{font-size:28px;flex-shrink:0;}
-.a2hs-text{flex:1;}
-.a2hs-title{font-size:13px;font-weight:600;margin-bottom:2px;}
-.a2hs-sub{font-size:11px;color:var(--text2);}
-.a2hs-btn{padding:8px 14px;border-radius:8px;background:var(--accent);border:none;color:#000;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
-.a2hs-close{font-size:16px;color:var(--text3);cursor:pointer;padding:0 4px;flex-shrink:0;}
 
 .detail-back{display:flex;align-items:center;gap:8px;padding:13px 20px;border-bottom:1px solid var(--border);font-size:13px;color:var(--accent);cursor:pointer;font-weight:600;}
 mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;padding:0 2px;}
@@ -279,17 +270,6 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <div class="lightbox-close">✕</div>
   <img id="lightbox-img" src="" alt="">
-</div>
-
-<!-- A2HS BAR -->
-<div class="a2hs-bar" id="a2hs-bar">
-  <div class="a2hs-icon">📱</div>
-  <div class="a2hs-text">
-    <div class="a2hs-title">Add X/News to Home Screen</div>
-    <div class="a2hs-sub">Get the full app experience</div>
-  </div>
-  <button class="a2hs-btn" id="a2hs-btn">Add</button>
-  <div class="a2hs-close" onclick="dismissA2HS()">✕</div>
 </div>
 
 <!-- BANNER -->
@@ -463,6 +443,7 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
         <div>
           <div class="source-box-label">Source</div>
           <div class="source-box-name" id="p-source-name"></div>
+        <div id="p-cred-score" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
         </div>
         <div id="p-cred-badge"></div>
       </div>
@@ -510,7 +491,6 @@ const cache={};
 const storyAICache={};
 let notifHistory=[];
 let unreadNotifs=0;
-let deferredA2HS=null;
 let lastUpdated=null;
 let readStories=new Set();
 
@@ -540,7 +520,10 @@ function timeClass(d){
   if(s<3600)return'time-fresh';if(s<21600)return'time-recent';return'time-old';
 }
 function credClass(l){return l==='High'?'cred-high':l==='Medium'?'cred-medium':l==='Low'?'cred-low':'cred-unknown';}
-function credHTML(c){if(!c)return'';return`<span class="cred-badge ${credClass(c.label)}">🛡 ${c.label}</span>`;}
+function credHTML(c){
+  if(!c||c.label==='Unknown')return`<span class="cred-badge cred-unknown">🛡 Unverified</span>`;
+  return`<span class="cred-badge ${credClass(c.label)}">🛡 ${c.label}</span>`;
+}
 function highlight(text,q){
   if(!q||!text)return text;
   const esc=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -639,9 +622,12 @@ function makeCard(story,topicName,idx,isTop,searchQuery){
   div.dataset.image=story.image||'';div.dataset.author=story.author||'';
   div.dataset.credLabel=cred.label;div.dataset.credScore=cred.score||0;
 
-  // Always show a real image — use story image or fall back to Unsplash topic photo
-  const topicQuery=encodeURIComponent((topicName||story.source||'news').split(' ')[0].toLowerCase());
-  const fallbackImg=`https://source.unsplash.com/480x200/?${topicQuery}&sig=${Math.abs(story.title.split('').reduce((a,c)=>a+c.charCodeAt(0),0))}`;
+  // Always show a real image — use story image or consistent topic-based fallback
+  const titleHash=Math.abs(story.title.split('').reduce((a,c)=>a+c.charCodeAt(0),0));
+  const topicSeeds={'australian-news':10,'world-news':20,'business':30,'technology':40,'ai':50,'crypto':60,'science':70,'health':80,'australian-sports':90,'sports':100};
+  const topicObj=TOPICS.find(t=>t.name===topicName);
+  const seed=(topicSeeds[topicObj?.id]||0)+(titleHash%50);
+  const fallbackImg=`https://picsum.photos/seed/${seed}/480/200`;
   const imgSrc=story.image||fallbackImg;
   const imageHTML=`<img class="card-image" src="${imgSrc}" alt="" loading="lazy" onerror="this.src='${fallbackImg}'">`;
 
@@ -701,8 +687,11 @@ function openStory(e,id,fromNotif){
 
   const topic=TOPICS.find(t=>t.name===currentStory.topic);
   const icon=topic?topic.icon:'📰';
-  const pTopicQuery=encodeURIComponent((currentStory.topic||currentStory.source||'news').split(' ')[0].toLowerCase());
-  const pFallback=`https://source.unsplash.com/480x220/?${pTopicQuery}&sig=${Math.abs((currentStory.title||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0))}`;
+  const pTitleHash=Math.abs((currentStory.title||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0));
+  const pTopicSeeds={'australian-news':10,'world-news':20,'business':30,'technology':40,'ai':50,'crypto':60,'science':70,'health':80,'australian-sports':90,'sports':100};
+  const pTopicObj=TOPICS.find(t=>t.name===currentStory.topic);
+  const pSeed=(pTopicSeeds[pTopicObj?.id]||0)+(pTitleHash%50);
+  const pFallback=`https://picsum.photos/seed/${pSeed}/480/220`;
   const pImgSrc=currentStory.image||pFallback;
   document.getElementById('p-image-wrap').innerHTML=`<img class="panel-image" src="${pImgSrc}" alt="" onclick="openLightbox(this.src)" onerror="this.src='${pFallback}'">`;
   document.getElementById('p-tag').textContent=currentStory.topic||currentStory.source;
@@ -714,6 +703,9 @@ function openStory(e,id,fromNotif){
   document.getElementById('p-source-link').textContent=currentStory.source;
   document.getElementById('p-source-link').href=currentStory.url;
   document.getElementById('p-cred-badge').innerHTML=credHTML(currentStory.credibility);
+  const scoreEl=document.getElementById('p-cred-score');
+  if(scoreEl&&currentStory.credibility?.score>0)scoreEl.textContent=`Credibility score: ${currentStory.credibility.score}/100`;
+  else if(scoreEl)scoreEl.textContent='Source credibility unrated';
   document.getElementById('p-bullets').innerHTML='<li class="bullet-loading"><div class="mini-spin"></div>Loading key points…</li>';
   document.getElementById('p-summary').innerHTML='<span style="color:var(--text3);font-style:italic;">Loading summary…</span>';
   document.getElementById('ask-msgs').innerHTML='';
@@ -1193,32 +1185,7 @@ function initPullToRefresh(){
   },{passive:true});
 }
 
-// ── ADD TO HOME SCREEN ──
-function initA2HS(){
-  if(localStorage.getItem('a2hs-dismissed'))return;
-  window.addEventListener('beforeinstallprompt',e=>{
-    e.preventDefault();deferredA2HS=e;
-    setTimeout(()=>document.getElementById('a2hs-bar').classList.add('show'),3000);
-  });
-  // iOS Safari instructions
-  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-  const isInStandalone=window.matchMedia('(display-mode:standalone)').matches;
-  if(isIOS&&!isInStandalone&&!localStorage.getItem('a2hs-dismissed')){
-    setTimeout(()=>{
-      document.getElementById('a2hs-bar').querySelector('.a2hs-sub').textContent='Tap the Share button then "Add to Home Screen"';
-      document.getElementById('a2hs-bar').classList.add('show');
-    },3000);
-  }
-  document.getElementById('a2hs-btn').onclick=async()=>{
-    if(deferredA2HS){await deferredA2HS.prompt();deferredA2HS=null;}
-    dismissA2HS();
-  };
-}
-
-function dismissA2HS(){
-  document.getElementById('a2hs-bar').classList.remove('show');
-  localStorage.setItem('a2hs-dismissed','true');
-}
+// A2HS removed
 
 // ── BANNER ──
 let bannerTimer;
@@ -1265,7 +1232,7 @@ function loadSaved(){
 function init(){
   document.getElementById('brief-date').textContent=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
   loadSaved();renderTopics();renderFollowTopics();renderNotifTopics();renderKeywordTags();renderNotifHistory();updateNotifBadge();
-  initPullToRefresh();initA2HS();
+  initPullToRefresh();
   if(notifEnabled){scheduleBrief();startCheckInterval();registerServiceWorker();}
   loadBrief();
   if('serviceWorker' in navigator){
