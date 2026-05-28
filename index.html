@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#060810">
 <title>X/News</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -16,10 +20,10 @@
   --card:rgba(6,10,22,0.82);--nav:rgba(6,8,16,0.96);
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden;width:100%;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 50% at 50% -5%,rgba(100,180,255,0.07) 0%,transparent 65%),radial-gradient(ellipse 50% 35% at 85% 85%,rgba(167,139,250,0.05) 0%,transparent 55%);}
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:15px 20px 13px;background:var(--nav);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:15px 20px 13px;background:var(--nav);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);width:100%;}
 .logo{font-family:'Playfair Display',serif;font-size:20px;letter-spacing:-0.3px;}
 .logo em{color:var(--accent);font-style:normal;}
 .live-chip{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:var(--green-glow);border:1px solid rgba(52,211,153,0.18);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);}
@@ -29,9 +33,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .page{display:none;padding-bottom:90px;position:relative;z-index:1;}
 .page.active{display:block;}
 /* PANEL */
-.panel{position:fixed;top:0;height:100dvh;width:100%;max-width:480px;left:50%;transform:translateX(calc(-50% + 480px));background:var(--bg);z-index:300;overflow-y:auto;transition:transform .35s cubic-bezier(.4,0,.2,1);}
-@media(max-width:480px){.panel{left:0;transform:translateX(100%);}.panel.open{transform:translateX(0);}}
-.panel.open{transform:translateX(-50%);}
+.panel{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:300;overflow-y:auto;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
+.panel.open{transform:translateX(0);}
 /* BRIEF HERO */
 .brief-hero{padding:28px 20px 22px;border-bottom:1px solid var(--border);position:relative;}
 .brief-hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.25;}
@@ -92,7 +95,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .t-icon{font-size:24px;margin-bottom:10px;}
 .t-name{font-size:13px;font-weight:500;}
 /* PANEL */
-.panel-bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border);background:var(--nav);backdrop-filter:blur(24px);}
+.panel-bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border);background:var(--nav);backdrop-filter:blur(24px);width:100%;}
+@media(min-width:481px){.panel{left:50%;transform:translateX(calc(-50% + 500px));width:480px;}.panel.open{transform:translateX(-50%);}}
 .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);cursor:pointer;font-weight:600;}
 .panel-body{padding:0 0 40px;}
 .panel-image{width:100%;height:220px;object-fit:cover;display:block;}
@@ -182,7 +186,7 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 .notif-item-source{font-size:11px;color:var(--text3);margin-top:4px;}
 .notif-clear-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin:0 20px 4px;}
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--nav);backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom);}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;width:100%;max-width:480px;margin:0 auto;background:var(--nav);backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom);}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 0 13px;cursor:pointer;color:var(--text3);transition:color .2s;position:relative;}
 .nav-item.active{color:var(--accent);}
 .nav-item.active::before{content:'';position:absolute;top:0;left:18%;right:18%;height:1px;background:var(--accent);box-shadow:0 0 8px var(--accent);}
@@ -603,12 +607,19 @@ async function sendAsk(){
   if(!q||!currentStory)return;
   inp.value='';
   const msgs=document.getElementById('ask-msgs');
-  msgs.innerHTML+=`<div class="msg user">${q}</div><div class="msg ai" id="ai-typing">Thinking…</div>`;
+  // Use unique ID for each typing indicator so they don't overwrite each other
+  const typingId='ai-typing-'+Date.now();
+  const userDiv=document.createElement('div');userDiv.className='msg user';userDiv.textContent=q;
+  const aiDiv=document.createElement('div');aiDiv.className='msg ai';aiDiv.id=typingId;aiDiv.textContent='Thinking…';
+  msgs.appendChild(userDiv);msgs.appendChild(aiDiv);
   msgs.scrollTop=msgs.scrollHeight;
   askHistory.push({r:'u',t:q});
   const ans=await askGemini(q,currentStory,askHistory);
-  const t=document.getElementById('ai-typing');
-  if(t){t.textContent=ans||'Unable to get a response right now. Please try again.';if(!ans)t.style.color='var(--text3)';}
+  const t=document.getElementById(typingId);
+  if(t){
+    t.textContent=ans||'Unable to get a response right now. Please try again.';
+    if(!ans)t.style.color='var(--text3)';
+  }
   if(ans)askHistory.push({r:'a',t:ans});
   msgs.scrollTop=msgs.scrollHeight;
 }
