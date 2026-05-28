@@ -86,7 +86,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .story-card:hover{border-color:var(--border-glow);transform:translateY(-2px);box-shadow:0 10px 36px rgba(0,0,0,.45);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 .card-image{width:100%;height:180px;object-fit:cover;display:block;}
-.card-image-placeholder{width:100%;height:130px;background:linear-gradient(135deg,var(--surface) 0%,var(--surface2) 100%);display:flex;align-items:center;justify-content:center;font-size:36px;}
+.card-image-placeholder{display:none;}
 .card-body{padding:16px;}
 .card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .top-story-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:20px;background:var(--green-glow);border:1px solid rgba(52,211,153,0.25);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);}
@@ -141,7 +141,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .share-btn:hover{border-color:var(--border-glow);color:var(--accent);}
 .panel-body{padding:0 0 40px;}
 .panel-image{width:100%;height:220px;object-fit:cover;display:block;cursor:pointer;}
-.panel-image-placeholder{width:100%;height:160px;background:linear-gradient(135deg,var(--surface) 0%,var(--surface2) 100%);display:flex;align-items:center;justify-content:center;font-size:52px;}
+.panel-image-placeholder{display:none;}
 .panel-content{padding:20px;}
 .panel-tag{font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
 .panel-headline{font-family:'Playfair Display',serif;font-size:24px;line-height:1.25;margin-bottom:8px;}
@@ -639,9 +639,11 @@ function makeCard(story,topicName,idx,isTop,searchQuery){
   div.dataset.image=story.image||'';div.dataset.author=story.author||'';
   div.dataset.credLabel=cred.label;div.dataset.credScore=cred.score||0;
 
-  const imageHTML=story.image
-    ?`<img class="card-image" src="${story.image}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-image-placeholder>${icon}</div>'">`
-    :`<div class="card-image-placeholder">${icon}</div>`;
+  // Always show a real image — use story image or fall back to Unsplash topic photo
+  const topicQuery=encodeURIComponent((topicName||story.source||'news').split(' ')[0].toLowerCase());
+  const fallbackImg=`https://source.unsplash.com/480x200/?${topicQuery}&sig=${Math.abs(story.title.split('').reduce((a,c)=>a+c.charCodeAt(0),0))}`;
+  const imgSrc=story.image||fallbackImg;
+  const imageHTML=`<img class="card-image" src="${imgSrc}" alt="" loading="lazy" onerror="this.src='${fallbackImg}'">`;
 
   const tc=timeClass(story.pubDate);
   div.innerHTML=`
@@ -699,9 +701,10 @@ function openStory(e,id,fromNotif){
 
   const topic=TOPICS.find(t=>t.name===currentStory.topic);
   const icon=topic?topic.icon:'📰';
-  document.getElementById('p-image-wrap').innerHTML=currentStory.image
-    ?`<img class="panel-image" src="${currentStory.image}" alt="" onclick="openLightbox(this.src)" onerror="this.style.display='none'">`
-    :`<div class="panel-image-placeholder">${icon}</div>`;
+  const pTopicQuery=encodeURIComponent((currentStory.topic||currentStory.source||'news').split(' ')[0].toLowerCase());
+  const pFallback=`https://source.unsplash.com/480x220/?${pTopicQuery}&sig=${Math.abs((currentStory.title||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0))}`;
+  const pImgSrc=currentStory.image||pFallback;
+  document.getElementById('p-image-wrap').innerHTML=`<img class="panel-image" src="${pImgSrc}" alt="" onclick="openLightbox(this.src)" onerror="this.src='${pFallback}'">`;
   document.getElementById('p-tag').textContent=currentStory.topic||currentStory.source;
   document.getElementById('p-headline').textContent=currentStory.title;
   document.getElementById('p-byline').textContent=currentStory.author?`By ${currentStory.author}`:'';
