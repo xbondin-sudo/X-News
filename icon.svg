@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e1018"/>
+      <stop offset="100%" stop-color="#080c14"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f0d878"/>
+      <stop offset="40%" stop-color="#d4a843"/>
+      <stop offset="100%" stop-color="#a07228"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+  <!-- Subtle border -->
+  <rect width="512" height="512" rx="110" fill="none" stroke="#2a2010" stroke-width="3"/>
+  <!-- Top rule -->
+  <line x1="100" y1="136" x2="412" y2="136" stroke="#c8943a" stroke-width="2.5" opacity="0.55"/>
+  <!-- Serif X — large, centred -->
+  <text x="256" y="350" font-family="Georgia, 'Times New Roman', serif" font-size="264" fill="url(#gold)" text-anchor="middle" font-weight="400">X</text>
+  <!-- Bottom rule -->
+  <line x1="100" y1="385" x2="412" y2="385" stroke="#c8943a" stroke-width="2.5" opacity="0.55"/>
+  <!-- /NEWS wordmark -->
+  <text x="256" y="452" font-family="Georgia, 'Times New Roman', serif" font-size="46" fill="#8a6830" text-anchor="middle" letter-spacing="22">/NEWS</text>
+</svg>
