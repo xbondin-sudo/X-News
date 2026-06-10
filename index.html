@@ -7,6 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#060810">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon.svg">
 <title>X/News</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -478,7 +481,7 @@ mark{background:rgba(100,180,255,0.3);color:var(--text);border-radius:3px;paddin
 
 <script>
 const WORKER='https://xnews-worker.xbondin.workers.dev';
-const VAPID_PUBLIC='BK1JwQufuwil_Je1Xgh8n_oDSU_I9rbWgYrJ8tC0jApiFaPGzwo5outa1ZP--Xg_wYlgVR8UReml0dJgwQCUjbM';
+const VAPID_PUBLIC='BLBoLUF2BZwhVPu7-sp39oRZ8hDRatJnGwqLab7yQVxL3N_Uz5oa9Aqq1tZhp63Y2THJwwEjgYLzlzwj4JCMloo';
 
 let briefCount=12,topicCount=8;
 let notifEnabled=false,briefTime='07:00';
