@@ -625,14 +625,14 @@ function makeCard(story,topicName,idx,isTop,searchQuery){
   div.dataset.image=story.image||'';div.dataset.author=story.author||'';
   div.dataset.credLabel=cred.label;div.dataset.credScore=cred.score||0;
 
-  // Always show a real image — use story image or consistent topic-based fallback
+  // Always show a real image — use story image, or AI-generated relevant image, or topic fallback
   const titleHash=Math.abs(story.title.split('').reduce((a,c)=>a+c.charCodeAt(0),0));
   const topicSeeds={'australian-news':10,'world-news':20,'business':30,'technology':40,'ai':50,'crypto':60,'science':70,'health':80,'australian-sports':90,'sports':100};
   const topicObj=TOPICS.find(t=>t.name===topicName);
   const seed=(topicSeeds[topicObj?.id]||0)+(titleHash%50);
-  const fallbackImg=`https://picsum.photos/seed/${seed}/480/200`;
-  const imgSrc=story.image||fallbackImg;
-  const imageHTML=`<img class="card-image" src="${imgSrc}" alt="" loading="lazy" onerror="this.src='${fallbackImg}'">`;
+  const picsumFallback=`https://picsum.photos/seed/${seed}/480/200`;
+  const imgSrc=story.image||picsumFallback;
+  const imageHTML=`<img class="card-image" id="img-${id}" src="${imgSrc}" alt="" loading="lazy" onerror="this.src='${picsumFallback}'">`;
 
   const tc=timeClass(story.pubDate);
   div.innerHTML=`
@@ -655,7 +655,30 @@ function makeCard(story,topicName,idx,isTop,searchQuery){
       <button class="read-story-btn" onclick="openStory(event,'${id}')">Read full story →</button>
     </div>`;
   loadBullets(id,story);
+  if(!story.image) loadAIImage(id,story,topicName);
   return div;
+}
+
+// Generate a relevant image via Cloudflare AI if story has no original image
+const imageCache={};
+async function loadAIImage(id,story,topicName){
+  const cacheKey=story.title;
+  if(imageCache[cacheKey]){
+    const el=document.getElementById('img-'+id);
+    if(el)el.src=imageCache[cacheKey];
+    return;
+  }
+  try{
+    const seed=Math.abs(story.title.split('').reduce((a,c)=>a+c.charCodeAt(0),0))%10000;
+    const query=encodeURIComponent(`${topicName||''} ${story.title}`.slice(0,100));
+    const res=await fetch(`${WORKER}/image?q=${query}&seed=${seed}`);
+    const data=await res.json();
+    if(data.ok&&data.image){
+      imageCache[cacheKey]=data.image;
+      const el=document.getElementById('img-'+id);
+      if(el)el.src=data.image;
+    }
+  }catch(e){/* keep picsum fallback */}
 }
 
 async function loadBullets(id,story){
@@ -695,8 +718,26 @@ function openStory(e,id,fromNotif){
   const pTopicObj=TOPICS.find(t=>t.name===currentStory.topic);
   const pSeed=(pTopicSeeds[pTopicObj?.id]||0)+(pTitleHash%50);
   const pFallback=`https://picsum.photos/seed/${pSeed}/480/220`;
-  const pImgSrc=currentStory.image||pFallback;
-  document.getElementById('p-image-wrap').innerHTML=`<img class="panel-image" src="${pImgSrc}" alt="" onclick="openLightbox(this.src)" onerror="this.src='${pFallback}'">`;
+  const cachedAI=imageCache[currentStory.title];
+  const pImgSrc=currentStory.image||cachedAI||pFallback;
+  document.getElementById('p-image-wrap').innerHTML=`<img class="panel-image" id="panel-img" src="${pImgSrc}" alt="" onclick="openLightbox(this.src)" onerror="this.src='${pFallback}'">`;
+  if(!currentStory.image&&!cachedAI){
+    loadAIImage('panel-img-temp',currentStory,currentStory.topic);
+    // Use a direct fetch since panel img has different id pattern
+    (async()=>{
+      try{
+        const seed=Math.abs((currentStory.title||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0))%10000;
+        const query=encodeURIComponent(`${currentStory.topic||''} ${currentStory.title}`.slice(0,100));
+        const res=await fetch(`${WORKER}/image?q=${query}&seed=${seed}`);
+        const data=await res.json();
+        if(data.ok&&data.image){
+          imageCache[currentStory.title]=data.image;
+          const el=document.getElementById('panel-img');
+          if(el)el.src=data.image;
+        }
+      }catch(e){}
+    })();
+  }
   document.getElementById('p-tag').textContent=currentStory.topic||currentStory.source;
   document.getElementById('p-headline').textContent=currentStory.title;
   document.getElementById('p-byline').textContent=currentStory.author?`By ${currentStory.author}`:'';
