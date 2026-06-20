@@ -537,7 +537,7 @@ function haptic(){if(navigator.vibrate)navigator.vibrate(8);}
 // ── FETCH ──
 async function fetchNews(topic,limit){
   limit=limit||topicCount;
-  if(cache[topic]&&cache[topic].ts>Date.now()-5*60000&&cache[topic].stories.length>=limit)
+  if(cache[topic]&&cache[topic].ts>Date.now()-2*60000&&cache[topic].stories.length>=limit)
     return cache[topic].stories.slice(0,limit);
   try{
     const res=await fetch(`${WORKER}/news?topic=${topic}&limit=${limit}`);
