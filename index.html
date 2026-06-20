@@ -571,7 +571,10 @@ async function getStoryAI(story){
   const key=story.title;
   if(storyAICache[key]&&(storyAICache[key].bullets.length>0||storyAICache[key].summary))
     return storyAICache[key];
-  const data=await workerPOST('/ai/story',{title:story.title,desc:story.desc||story.title||''});
+  // Send the real description only — do NOT substitute the title, the worker
+  // handles a missing description on its own and this was causing bullets
+  // and summary to look identical (both generated from title-only input).
+  const data=await workerPOST('/ai/story',{title:story.title,desc:story.desc||''});
   if(data.ok&&(data.bullets?.length>0||data.summary)){
     storyAICache[key]={bullets:data.bullets||[],summary:data.summary||''};
     return storyAICache[key];
